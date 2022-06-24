@@ -33,10 +33,28 @@ class Solution:
                     break  # no need to try to continue expansion
         return result
 
+    def longestValidParentheses_faster(self, s: str) -> int:
+        result = 0
+        for start_idx in range(0, len(s) - 1):
+            stack = []
+            for l, c in enumerate(s[start_idx:], start=1):
+                if c == '(':
+                    stack.append(c)
+                elif c == ')':
+                    if stack and stack[-1] == '(':
+                        stack.pop(-1)
+
+                        if not stack:
+                            if l > result:
+                                result = l
+                    else:
+                        break  # no need to continue trying it
+        return result
+
     def longestValidParentheses(self, s: str) -> int:
-        return self.longestValidParentheses_naive(s)
+        return self.longestValidParentheses_faster(s)
 
 
 if __name__ == '__main__':
     x = Solution()
-    # print(x.longestValidParentheses(')()())'))
+    print(x.longestValidParentheses(')()())'))
