@@ -52,7 +52,29 @@ class Solution:
         return result
 
     def longestValidParentheses(self, s: str) -> int:
-        return self.longestValidParentheses_faster(s)
+        open_idx = []
+        temp = [False] * len(s)
+        for idx, c in enumerate(s):
+            if c == '(':
+                open_idx.append(idx)
+            else:
+                assert c == ')'
+                if open_idx:
+                    last_open_idx = open_idx[-1]
+                    open_idx.pop(-1)
+                    temp[last_open_idx] = True
+                    temp[idx] = True
+
+        # longest sequence with True
+        result = 0
+        cur = 0
+        for x in temp:
+            if x:
+                cur += 1
+            else:
+                result = max(result, cur)
+                cur = 0
+        return max(result, cur)
 
 
 if __name__ == '__main__':
