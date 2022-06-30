@@ -5,7 +5,9 @@ from typing import List
 
 
 class Solution:
-    def maximalRectangle(self, matrix: List[List[str]]) -> int:
+    # O(n^4) ... or might be O(3) with optimizations to short cut and it passes
+    # comparing to O(n^3) w/o shortcuts that does not
+    def maximalRectangle_v1(self, matrix: List[List[str]]) -> int:
         rows = len(matrix)
         cols = len(matrix[0])
 
@@ -70,6 +72,44 @@ class Solution:
                             break  # no need to enlarge it further
 
         return best_sum
+
+    # O(n^3)
+    def maximalRectangle_v2(self, matrix):
+        # https://leetcode.com/problems/maximal-rectangle/discuss/29094/Evolve-from-brute-force-to-optimal
+        # for each cell calculate number of consecutive "1" to the right
+        # then starting with all possible points (i, j) we calculate max area iterating on height
+        # where width[row] = min(width[row-1], ones_to_right[row, j]
+        rows = len(matrix)
+        cols = len(matrix[0])
+        ones_to_right = [[0] * cols for _ in range(rows)]
+
+        # aux pass
+        for row in range(rows):
+            for col in range(cols - 1, -1, -1):
+                if matrix[row][col] != '1':
+                    ones_to_right[row][col] = 0
+                    continue
+                if col == cols -1:
+                    ones_to_right[row][col] = 1
+                else:
+                    ones_to_right[row][col] = ones_to_right[row][col + 1] + 1
+
+        print('aux pass done')
+
+        # main pass
+        max_area = 0
+        for row in range(rows):
+            for col in range(cols):
+                width = ones_to_right[row][col]
+                for height in range(1, rows - row + 1):
+                    width = min(width, ones_to_right[row + height - 1][col])
+                    max_area = max(max_area, height * width)
+                    if width == 0:
+                        break
+        return max_area
+
+    def maximalRectangle(self, matrix):
+        return self.maximalRectangle_v2(matrix)
 
 
 if __name__ == '__main__':
