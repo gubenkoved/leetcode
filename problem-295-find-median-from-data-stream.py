@@ -12,9 +12,10 @@
 # 10-5 of the actual answer will be accepted.
 
 import bisect
+import heapq
 
 
-class MedianFinder:
+class MedianFinderV1:
 
     def __init__(self):
         self.data = []
@@ -29,3 +30,40 @@ class MedianFinder:
         if n % 2 == 1:
             return self.data[n // 2]
         return (self.data[n // 2] + self.data[n // 2 - 1]) / 2
+
+
+# recalled approach after seeing discussion headers
+class MedianFinder:
+    def __init__(self):
+        # values in max heap should be less than values in min heap
+        # min from min heap and max from max heap will form a median
+        # note that values in max_heap are inverted because Python only has min heap
+        self.max_heap = []
+        self.min_heap = []
+
+    # O(logn)
+    def addNum(self, num: int) -> None:
+        if not self.max_heap or num <= -(self.max_heap[0]):
+            heapq.heappush(self.max_heap, -num)
+        else:
+            heapq.heappush(self.min_heap, +num)
+
+        # rebalance if needed
+        if abs(len(self.max_heap) - len(self.min_heap)) > 1:
+            if len(self.max_heap) > len(self.min_heap):
+                x = heapq.heappop(self.max_heap)
+                heapq.heappush(self.min_heap, -x)
+            else:
+                x = heapq.heappop(self.min_heap)
+                heapq.heappush(self.max_heap, -x)
+
+    # O(1)
+    def findMedian(self) -> float:
+        n = len(self.min_heap) + len(self.max_heap)
+        if n % 2 == 1:
+            if len(self.min_heap) > len(self.max_heap):
+                return self.min_heap[0]
+            else:
+                return -self.max_heap[0]
+        else:
+            return (self.min_heap[0] + -self.max_heap[0]) / 2
