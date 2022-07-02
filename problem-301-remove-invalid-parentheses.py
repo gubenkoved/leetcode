@@ -2,20 +2,19 @@ from typing import List
 
 
 def is_valid(s: str):
-    stack = []
-
+    counter = 0
     for c in s:
         if c.isalpha():
             pass
         elif c == '(':
-            stack.append(c)
+            counter += 1
         elif c == ')':
-            if stack and stack[-1] == '(':
-                stack.pop(-1)
+            if counter > 0:
+                counter -= 1
             else:
                 return False
 
-    return not stack
+    return counter == 0
 
 
 class Solution:
