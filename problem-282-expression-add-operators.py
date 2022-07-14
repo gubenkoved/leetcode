@@ -74,11 +74,53 @@ class Solution:
         return find(num, target)
 
     def addOperators(self, num: str, target: int) -> List[str]:
-        return self.addOperators_bruteforce(num, target)
+        found = set()
+
+        def find(s: str, idx: int, current_result: int, last_term: int, prev_operator: str):
+            # idx points to the first char which is "mutable" (all to the left of it is not)
+            if idx >= len(s):
+                if current_result == target:
+                    found.add(s)
+                return
+
+            for op_idx in range(idx + 1, len(s) + 1):
+                operand = s[idx:op_idx]
+
+                if len(operand) > 1 and operand[0] == '0':
+                    continue
+
+                operand_num = int(operand)
+                left = s[:op_idx]
+                right = s[op_idx:]
+
+                new_result = current_result
+                new_last_term = 0
+                if prev_operator == '+':
+                    new_last_term = operand_num
+                    new_result += operand_num
+                elif prev_operator == '-':
+                    new_last_term = -operand_num
+                    new_result -= operand_num
+                elif prev_operator == '*':
+                    new_result -= last_term
+                    new_result += last_term * operand_num
+                    new_last_term = last_term * operand_num
+
+                if right:
+                    find(left + '+' + right, op_idx + 1, new_result, new_last_term, '+')
+                    find(left + '-' + right, op_idx + 1, new_result, new_last_term, '-')
+                    find(left + '*' + right, op_idx + 1, new_result, new_last_term, '*')
+                else:  # end case, last operator
+                    find(left, op_idx, new_result, operand_num, prev_operator)
+
+        find(num, 0, 0, 0, '+')
+
+        return list(found)
 
 
 if __name__ == '__main__':
     x = Solution()
     print(x.addOperators("123", 6))
     print(x.addOperators("232", 8))
-    print(x.addOperators("3456237490", 9191))
+    print(x.addOperators("105", 5))
+    print(x.addOperators("3456237490", 9191))  # no answer
