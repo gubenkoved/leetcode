@@ -1,5 +1,6 @@
 from typing import List
 from collections import Counter
+from functools import lru_cache
 
 
 def overlap_count(x, y):
@@ -34,8 +35,6 @@ class Solution:
         stickers = [sanitize(sticker, target) for sticker in stickers]
         stickers = [''.join(sorted(x)) for x in stickers if x]
         stickers = list(set(stickers))
-        # stickers = sorted(stickers, key=lambda x: overlap_count(x, target),
-        #                   reverse=True)
 
         # remove stickers which are "dominated" by another ones
         to_remove = set()
@@ -47,6 +46,11 @@ class Solution:
 
         print('dominated stickers: %s' % to_remove)
         stickers = [x for x in stickers if x not in to_remove]
+
+        # sort stickers by the amount of the matching chars
+        # stickers = sorted(stickers, key=lambda x: overlap_count(x, target),
+        #                   reverse=True)
+
         print('stickers left: %s' % stickers)
 
         # see if it is even possible to solve
@@ -56,6 +60,7 @@ class Solution:
         # worst case -- sticker gives a single letter each time
         best_count = len(target)
 
+        @lru_cache(None)
         def search(current_count: int, target: str):
             nonlocal best_count
 
