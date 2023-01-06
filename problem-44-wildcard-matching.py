@@ -10,19 +10,6 @@
 
 class Solution:
     def isMatch(self, s: str, p: str) -> bool:
-        # remove repeated "*" chars from the input pattern
-        p_condensed = ''
-        c_prev = None
-
-        for c in p:
-            if c == '*' and c_prev == '*':
-                continue
-            p_condensed += c
-            c_prev = c
-
-        return self.isMatch_impl(s, p_condensed)
-
-    def isMatch_impl(self, s: str, p: str) -> bool:
         s_idx = 0
         p_idx = 0
 
@@ -34,12 +21,14 @@ class Solution:
             p_consumed = p_idx == len(p)
 
             if s_consumed or p_consumed:
-                matched = s_consumed and p_consumed
-
                 # edge case -- terminating "*" wildcard
-                if not p_consumed and p_idx == len(p) - 1 and p[p_idx] == '*':
-                    assert s_consumed
-                    matched = True
+                if s_consumed and not p_consumed:
+                    # consume all trailing "*" from pattern
+                    while p_idx < len(p) and p[p_idx] == '*':
+                        p_idx += 1
+                        p_consumed = p_idx == len(p)
+
+                matched = s_consumed and p_consumed
 
                 if matched:
                     return True
