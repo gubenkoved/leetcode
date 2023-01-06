@@ -43,9 +43,8 @@ class Solution:
             p_chr = p[p_idx]
             s_chr = s[s_idx]
 
-            if p_chr == '?':
-                # unconditionally advance pointers in both
-                # input string and the pattern
+            if p_chr == '?' or p_chr == s_chr:
+                # advance both pointers
                 s_idx += 1
                 p_idx += 1
                 continue
@@ -60,13 +59,6 @@ class Solution:
                 # handle expansion to zero chars
                 p_idx += 1
                 continue
-            else:  # regular char
-
-                # fail match if chars are not matching
-                if p_chr == s_chr:
-                    s_idx += 1
-                    p_idx += 1
-                    continue
 
             if restart_idx is not None:
                 # print('2. restart using %s' % (restart_idx,))
