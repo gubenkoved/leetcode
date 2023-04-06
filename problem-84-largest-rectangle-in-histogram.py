@@ -38,20 +38,16 @@ class Solution:
         heights.append(0)
         n = len(heights)
         max_area = 0
-        stack = [heights[0]]
+        stack = [(heights[0], 1)]  # (height, width) tuples
         for idx in range(1, n):
+            popped_width = 0
             if heights[idx] < heights[idx - 1]:
-                popped = 0
-                while stack and stack[-1] > heights[idx]:
-                    area = (popped + 1) * stack[-1]
+                while stack and stack[-1][0] > heights[idx]:
+                    h, w = stack.pop()
+                    area = (popped_width + w) * h
                     max_area = max(max_area, area)
-                    popped += 1
-                    stack.pop()
-
-                # TODO: optimize by storing width
-                for _ in range(popped):
-                    stack.append(heights[idx])
-            stack.append(heights[idx])
+                    popped_width += w
+            stack.append((heights[idx], 1 + popped_width))
         return max_area
 
 
