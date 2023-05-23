@@ -34,17 +34,16 @@ class Solution:
 
     def profitableSchemes(self, n: int, minProfit: int, group: List[int], profit: List[int]) -> int:
 
-        cache = {}
+        a = [[[None] * (minProfit + 1) for _ in range(n + 1)] for _ in range(len(group) + 1)]
 
         def dp(len, n_, p_):
-            cache_key = (len, n_, p_)
 
-            if cache_key in cache:
-                return cache[cache_key]
+            if a[len][n_][p_] is not None:
+                return a[len][n_][p_]
 
             if len == 0 or n_ == 0:
                 result = 1 if p_ <= 0 else 0
-                cache[cache_key] = result
+                a[len][n_][p_] = result
                 return result
 
             # do not commit
@@ -54,7 +53,7 @@ class Solution:
             if n_ >= group[len - 1]:
                 result += dp(len - 1, n_ - group[len - 1], max(0, p_ - profit[len - 1]))
 
-            cache[cache_key] = result
+            a[len][n_][p_] = result
 
             return result
 
