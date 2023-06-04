@@ -1,4 +1,6 @@
+import bisect
 import collections
+import itertools
 import math
 import time
 from typing import List
@@ -117,11 +119,11 @@ class Solution:
         print('%d invocations' % call_count)
         print(results)
 
-    def minimumDifference(self, nums: List[int]) -> int:
+    def minimumDifference_manual(self, nums: List[int]) -> int:
         # OPTIMIZATION: consider the first element always part of the target set
         #  given the symmetry of partition
         k, s = len(nums), sum(nums)
-        nums1, nums2 = nums[1:k//2], nums[k//2:]
+        nums1, nums2 = nums[1:k // 2], nums[k // 2:]
 
         # returns array where i-th element is a collection that shows
         # possible sums i elements from the source array
@@ -165,6 +167,7 @@ class Solution:
                     return mid
                 else:
                     return f(left_incl, mid)
+
             return f(0, len(a))
 
         # take i from one subarray and leftover from another subarray
@@ -192,6 +195,54 @@ class Solution:
 
         return best_diff
 
+    # just like manual but relies on the standard library to find combinations
+    # and for binary search
+    def minimumDifference(self, nums: List[int]) -> int:
+        # OPTIMIZATION: consider the first element always part of the target set
+        #  given the symmetry of partition
+        k, s = len(nums), sum(nums)
+        nums1, nums2 = nums[1:k // 2], nums[k // 2:]
+
+        # returns array where i-th element is a collection that shows
+        # possible sums i elements from the source array
+        def possible_sums(a):
+            return [set(sum(x) for x in itertools.combinations(a, count))
+                    for count in range(0, len(a) + 1)]
+
+        left_possible = possible_sums(nums1)
+        right_possible = possible_sums(nums2)
+
+        # sort numbers for second subarray to be able to run binary search
+        for c in range(len(right_possible)):
+            right_possible[c] = sorted(right_possible[c])
+
+        best_diff = math.inf
+
+        # take i from one subarray and leftover from another subarray
+        for left_count in range(k // 2):
+            for left_sum in left_possible[left_count]:
+                left_sum += nums[0]
+                # do not try all items from second subarray -- use binary search
+                # to find the best one, closest to ideal sum reminder below
+                right_count = k // 2 - left_count - 1
+                ideal_right_sum = s // 2 - left_sum
+                right_possible_sums = right_possible[right_count]
+
+                # binary search first item less than ideal sum
+                right_idx = bisect.bisect_left(right_possible_sums, ideal_right_sum) - 1
+
+                right_sum = right_possible_sums[right_idx]
+                best_diff = min(best_diff, abs(s - 2 * (left_sum + right_sum)))
+
+                # try the next element as well
+                if right_idx < len(right_possible_sums) - 1:
+                    right_sum = right_possible_sums[right_idx + 1]
+                    best_diff = min(best_diff, abs(s - 2 * (left_sum + right_sum)))
+
+        print('BEST %d' % best_diff)
+
+        return best_diff
+
 
 if __name__ == '__main__':
     x = Solution()
@@ -203,6 +254,7 @@ if __name__ == '__main__':
     assert x.minimumDifference([4, 4, 4, 10]) == 6
     assert x.minimumDifference([1] * 5 + [10]) == 9
     assert x.minimumDifference([100] * 29 + [200]) == 100
+    assert x.minimumDifference([42, 41, 59, 43, 69, 67]) == 13
     assert x.minimumDifference(
         [7772197, 4460211, -7641449, -8856364, 546755, -3673029, 527497, -9392076, 3130315, -5309187, -4781283, 5919119,
          3093450, 1132720, 6380128, -3954678, -1651499, -7944388, -3056827, 1610628, 7711173, 6595873, 302974, 7656726,
@@ -213,9 +265,10 @@ if __name__ == '__main__':
          5045948, -7943170, 1665466, 9514306, 7960606, -142676]) == 1
 
     # performance test
-    for _ in range(10):
+    for _ in range(100):
         assert x.minimumDifference(
             [-9812803, -9143114, -2074989, -5685138, -7352242, 3440344, -2609145, -8086215, -8560628, 1649530, 9514043,
-             -6703707, 2999701, 4558830, -92232, -7002104, -563926, 5824475, 9273165, -5659380, -985282, 5974935, 5385506,
+             -6703707, 2999701, 4558830, -92232, -7002104, -563926, 5824475, 9273165, -5659380, -985282, 5974935,
+             5385506,
              9920972, 1291494, -3581309, -4123458, -1468372, 2224246, 7135705],
         ) == 2
