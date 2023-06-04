@@ -118,8 +118,10 @@ class Solution:
         print(results)
 
     def minimumDifference(self, nums: List[int]) -> int:
+        # OPTIMIZATION: consider the first element always part of the target set
+        #  given the symmetry of partition
         k, s = len(nums), sum(nums)
-        nums1, nums2 = nums[:k//2], nums[k//2:]
+        nums1, nums2 = nums[1:k//2], nums[k//2:]
 
         # returns array where i-th element is a collection that shows
         # possible sums i elements from the source array
@@ -157,18 +159,21 @@ class Solution:
                 if right_excl - left_incl <= 1:
                     return left_incl
                 mid = (left_incl + right_excl) // 2
-                if a[mid] <= value:
+                if a[mid] < value:
                     return f(mid, right_excl)
+                elif a[mid] == value:
+                    return mid
                 else:
                     return f(left_incl, mid)
             return f(0, len(a))
 
         # take i from one subarray and leftover from another subarray
-        for left_count in range(k // 2 + 1):
+        for left_count in range(k // 2):
             for left_sum in left_possible[left_count]:
+                left_sum += nums[0]
                 # do not try all items from second subarray -- use binary search
                 # to find the best one, closest to ideal sum reminder below
-                right_count = k // 2 - left_count
+                right_count = k // 2 - left_count - 1
                 ideal_right_sum = s // 2 - left_sum
                 right_possible_sums = right_possible[right_count]
 
