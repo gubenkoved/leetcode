@@ -8,31 +8,22 @@ class Solution:
         result = []
         taken = [None] * 4
         nums = sorted(nums)
-        offset = min(nums)
-
-        print('ORIG NUMS: %s' % nums)
-
-        for i in range(l):
-            nums[i] -= offset
-        target -= 4 * offset
-
-        print('NUMS: %s, OFFSET: %s, TARGET: %s' % (nums, offset, target))
 
         def f(idx, n, leftover):
-            if leftover < 0:
+            if leftover < n * nums[idx]:
                 return
 
             if n == 1:
-                found_idx = bisect.bisect_right(nums, leftover, lo=idx)
+                found_idx = bisect.bisect_left(nums, leftover, lo=idx)
 
-                if found_idx - 1 >= idx and nums[found_idx - 1] == leftover:
-                    taken[0] = nums[found_idx - 1] + offset
+                if found_idx != l and nums[found_idx] == leftover:
+                    taken[0] = nums[found_idx]
                     result.append(list(taken))
                 return
 
             i = idx
             while i < l - n + 1:
-                taken[n - 1] = nums[i] + offset
+                taken[n - 1] = nums[i]
                 f(i + 1, n - 1, leftover - nums[i])
                 i += 1
                 while i < l - n + 1 and nums[i] == nums[i - 1]:
@@ -40,7 +31,7 @@ class Solution:
 
         f(0, 4, target)
 
-        print('RESULT: %s\n' % result)
+        print('RESULT: %s' % result)
 
         return result
 
