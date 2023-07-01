@@ -103,6 +103,9 @@ class Solution:
             outcome = outcomes_map[state]
 
             for prev_state in prev_states_map[state]:
+                if prev_state is outcomes_map:
+                    continue
+
                 prev_outcome = None
 
                 if is_mouse_turn:
