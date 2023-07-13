@@ -23,10 +23,24 @@ class Solution:
 
         return result
 
+    def putMarbles(self, weights: List[int], k: int) -> int:
+        n = len(weights)
+
+        if k == n:
+            return 0
+
+        gap_cost = []
+        for idx in range(n - 1):
+            gap_cost.append(weights[idx] + weights[idx + 1])
+
+        gap_cost.sort()
+
+        return sum(gap_cost[-(k-1):]) - sum(gap_cost[:k-1])
+
 
 if __name__ == '__main__':
     x = Solution()
-    # print(x.putMarbles([1, 3, 5, 1], k=2))  # 4 as max 10, min 6
-    # print(x.putMarbles([1, 3], k=2))
-    # print(x.putMarbles([1, 4, 3, 2, 6, 1, 1, 4, 4, 1, 6], k=2))
+    print(x.putMarbles([1, 3, 5, 1], k=2))  # 4 as max 10, min 6
+    print(x.putMarbles([1, 3], k=2))
+    print(x.putMarbles([1, 4, 3, 2, 6, 1, 1, 4, 4, 1, 6], k=2))
     print(x.putMarbles([1, 4, 2, 5, 2], k=3))
