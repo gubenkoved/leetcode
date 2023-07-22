@@ -39,6 +39,47 @@ class Solution:
         nums[l], nums[r] = nums[r], nums[l]
         sort_after(l)
 
+    # wikipedia suggests simpler algorithm, subset of what I intuited
+    # https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
+    def nextPermutation(self, nums: List[int]) -> None:
+        """
+        Do not return anything, modify nums in-place instead.
+        """
+        # stage 1: find a first pair at indexes (k, k+1) where nums[k] < nums[k+1]
+        #          then find the largest index r where nums[r] > nums[l] and swap
+        # stage 2: reverse all numbers from k+1 till the end
+
+        n = len(nums)
+
+        if n <= 1:
+            return
+
+        found = False
+        for k in range(n - 2, -1, -1):
+            if nums[k] < nums[k + 1]:
+                found = True
+                break
+
+        def reverse_after(idx):
+            left, right = idx + 1, n - 1
+            while left < right:
+                nums[left], nums[right] = nums[right], nums[left]
+                left += 1
+                right -= 1
+
+        if not found:
+            reverse_after(-1)  # complete reverse
+            return
+
+        # find the largest index r where nums[r] > nums[k]
+        for r in range(n - 1, k, -1):
+            if nums[r] > nums[k]:
+                break
+
+        # swap k and r elements and then reverse everything after k
+        nums[k], nums[r] = nums[r], nums[k]
+        reverse_after(k)
+
 
 if __name__ == '__main__':
     x = Solution()
