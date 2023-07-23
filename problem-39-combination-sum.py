@@ -1,26 +1,21 @@
 from typing import List
+from functools import lru_cache
+
 
 class Solution:
     def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
-        found = set()
-        current = []
-
+        @lru_cache()
         def search(needed):
-            if needed < 0:
-                return
-
-            if needed == 0:
-                found.add(tuple(sorted(current)))
-                return
-
+            found = set()
             for x in candidates:
-                current.append(x)
-                if x <= needed:
-                    search(needed - x)
-                current.pop(-1)
+                if x < needed:
+                    for inner in search(needed - x):
+                        found.add(tuple(sorted((x,) + inner)))
+                elif x == needed:
+                    found.add((x,))
+            return found
 
-        search(target)
-        return [list(x) for x in found]
+        return [list(x) for x in search(target)]
 
 
 if __name__ == '__main__':
