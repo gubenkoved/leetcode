@@ -1,4 +1,5 @@
 from typing import List, Optional
+from functools import lru_cache
 
 
 class TreeNode:
@@ -9,6 +10,7 @@ class TreeNode:
 
 
 class Solution:
+    @lru_cache()
     def allPossibleFBT(self, n: int) -> List[Optional[TreeNode]]:
         if n == 1:
             return [TreeNode(0)]
