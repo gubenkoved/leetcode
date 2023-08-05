@@ -3,16 +3,21 @@ from typing import List
 
 class Solution:
     def maxProduct(self, nums: List[int]) -> int:
-        possible = set()
-        possible.add(nums[0])
-        result = max(possible)
+        min_ = nums[0]
+        max_ = nums[0]
+        result = nums[0]
 
         for idx in range(1, len(nums)):
-            new_possible = {nums[idx]}
-            for prev in possible:
-                new_possible.add(prev * nums[idx])
-            possible = new_possible
-            result = max(result, max(possible))
+            if nums[idx] >= 0:
+                min_, max_ = min_ * nums[idx], max_ * nums[idx]
+            elif nums[idx] < 0:
+                min_, max_ = max_ * nums[idx], min_ * nums[idx]
+
+            min_ = min(min_, nums[idx])
+            max_ = max(max_, nums[idx])
+
+            # update the max
+            result = max(result, max_)
 
         return result
 
