@@ -10,16 +10,19 @@ class Solution:
             depends[course].append(depends_on)
 
         learned = set()
+        visited = set()
 
-        def learn(course, path) -> bool:   # returns True if cycle is found
-            if course in path:
+        def learn(course) -> bool:   # returns True if cycle is found
+            if course in visited:
                 return True
+
+            visited.add(course)
 
             for dependency in depends.get(course, []):
                 if dependency in learned:
                     continue
 
-                cycle = learn(dependency, set(list(path) + [course]))
+                cycle = learn(dependency)
 
                 # stop if we detected cycle
                 if cycle:
@@ -32,7 +35,7 @@ class Solution:
             if course in learned:
                 continue
 
-            cycle_found = learn(course, set())
+            cycle_found = learn(course)
 
             if cycle_found:
                 return False
