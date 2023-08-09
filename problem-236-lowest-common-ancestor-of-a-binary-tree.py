@@ -7,33 +7,33 @@ class TreeNode:
 
 class Solution:
     def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        lcd = None
 
-        p_path = []
-        q_path = []
+        def walk(cur):
+            nonlocal lcd
 
-        def walk(cur, path):
-            nonlocal p_path
-            nonlocal q_path
+            p_found, q_found = 0, 0
 
             if cur.left:
-                walk(cur.left, path + [cur])
+                p_found2, q_found2 = walk(cur.left)
+                p_found = max(p_found, p_found2)
+                q_found = max(q_found, q_found2)
 
             if cur.right:
-                walk(cur.right, path + [cur])
+                p_found2, q_found2 = walk(cur.right)
+                p_found = max(p_found, p_found2)
+                q_found = max(q_found, q_found2)
 
             if cur is p:
-                p_path = path + [cur]
-
+                p_found = 1
             if cur is q:
-                q_path = path + [cur]
+                q_found = 1
 
-        walk(root, [])
+            if p_found and q_found and lcd is None:
+                lcd = cur
 
-        lcd = root
+            return p_found, q_found
 
-        for idx in range(len(p_path)):
-            if idx >= len(q_path) or p_path[idx] is not q_path[idx]:
-                break
-            lcd = p_path[idx]
+        walk(root)
 
         return lcd
