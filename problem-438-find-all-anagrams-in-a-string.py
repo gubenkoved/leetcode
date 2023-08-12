@@ -19,15 +19,21 @@ class Solution:
         window_hash = rolling_hash(s[:len(p)])
         target_hash = rolling_hash(p)
         result = []
+        prev_passed = False
 
         for idx in range(len(s) - len(p) + 1):
+
             if idx != 0:
                 window_hash ^= ord(s[idx - 1])
                 window_hash ^= ord(s[idx + len(p) - 1])
 
             if window_hash == target_hash:
-                if equal_at(idx):
+                if prev_passed and s[idx - 1] == s[idx + len(p) - 1] or equal_at(idx):
                     result.append(idx)
+                    prev_passed = True
+                    continue
+
+            prev_passed = False
 
         return result
 
@@ -35,4 +41,5 @@ class Solution:
 if __name__ == '__main__':
     x = Solution()
     # print(x.findAnagrams("cbaebabacd", p="abc"))
-    print(x.findAnagrams("abab", p="ab"))
+    # print(x.findAnagrams("abab", p="ab"))
+    print(x.findAnagrams("aaaaa", p="aa"))
