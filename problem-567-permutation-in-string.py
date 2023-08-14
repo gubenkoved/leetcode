@@ -1,3 +1,5 @@
+from collections import Counter
+
 class Solution:
     def checkInclusion(self, s1: str, s2: str) -> bool:
         def rolling_hash(s):
@@ -8,6 +10,7 @@ class Solution:
 
         s1 = ''.join(sorted(s1))
         s1_hash = rolling_hash(s1)
+        s1_freq = Counter(s1)
 
         window_hash = rolling_hash(s2[:len(s1) - 1])
 
@@ -21,7 +24,7 @@ class Solution:
                 window_hash ^= ord(s2[idx - 1])
 
             if window_hash == s1_hash:
-                if s1 == ''.join(sorted(s2[idx:idx+len(s1)])):
+                if Counter(s2[idx:idx + len(s1)]) == s1_freq:
                     return True
 
         return False
