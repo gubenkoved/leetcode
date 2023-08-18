@@ -42,7 +42,6 @@ class Solution:
         queue.append((1, beginWord))
 
         visited = set()
-        parent = {}
 
         while queue:
             distance, word = queue.popleft()
@@ -56,8 +55,41 @@ class Solution:
                 return distance
 
             for adj in adjacent.get(word, []):
-                parent[adj] = word
                 queue.append((distance + 1, adj))
+
+        return 0
+
+    # faster
+    def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]) -> int:
+        words = set(wordList)
+
+        if endWord not in words:
+            return 0
+
+        queue = collections.deque()
+        queue.append((1, beginWord))
+
+        visited = set()
+
+        alpha = [chr(x) for x in range(ord('a'), ord('z') + 1)]
+
+        while queue:
+            distance, word = queue.popleft()
+
+            if word in visited:
+                continue
+
+            visited.add(word)
+
+            if word == endWord:
+                return distance
+
+            # try to find adjacent on the fly by changing all letters
+            for idx in range(len(word)):
+                for c in alpha:
+                    candidate = word[:idx] + c + word[idx+1:]
+                    if candidate in words:
+                        queue.append((distance + 1, candidate))
 
         return 0
 
