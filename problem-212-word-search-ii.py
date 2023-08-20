@@ -7,6 +7,7 @@ class Node:
         self.char = char
         self.children = {}  # char -> Node
         self.eow = False
+        self.parent = None
 
 
 class Trie:
@@ -18,9 +19,16 @@ class Trie:
         for char in word:
             if char not in cur.children:
                 node = Node(char)
+                node.parent = cur
                 cur.children[char] = node
             cur = cur.children[char]
         cur.eow = True
+
+    def discard(self, node: Node):
+        node.eow = False
+
+        if not node.children:
+            node.parent.children.pop(node.char)
 
 
 class Solution:
@@ -39,6 +47,7 @@ class Solution:
         def search(row, col, trie_node, cur, visited):
             if trie_node.eow:
                 found.add(cur)
+                trie.discard(trie_node)
 
             candidates = [
                 (row - 1, col),
@@ -76,7 +85,36 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
+    # print(
+    #     x.findWords(
+    #         board=[["o", "a", "a", "n"], ["e", "t", "a", "e"], ["i", "h", "k", "r"], ["i", "f", "l", "v"]],
+    #         words=["oath", "pea", "eat", "rain"]))
+    # print(
+    #     x.findWords(
+    #         [["a", "b"], ["c", "d"]],
+    #         ["ab", "cb", "ad", "bd", "ac", "ca", "da", "bc", "db", "adcb", "dabc", "abb", "acb"]
+    #     )
+    # )
     print(
         x.findWords(
-            board=[["o", "a", "a", "n"], ["e", "t", "a", "e"], ["i", "h", "k", "r"], ["i", "f", "l", "v"]],
-            words=["oath", "pea", "eat", "rain"]))
+            [["o", "a", "b", "n"], ["o", "t", "a", "e"], ["a", "h", "k", "r"], ["a", "f", "l", "v"]],
+            ['oa', 'oaa']
+        )
+    )
+    # print(
+    #     x.findWords(
+    #         [["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"],
+    #          ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"]],
+    #         ["a", "aa", "aaa", "aaaa", "aaaaa", "aaaaaa", "aaaaaaa", "aaaaaaaa", "aaaaaaaaa", "aaaaaaaaaa"]
+    #     )
+    # )
