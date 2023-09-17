@@ -1,4 +1,6 @@
 import collections
+import functools
+
 
 class Solution:
     def isMatch(self, s: str, p: str) -> bool:
@@ -60,6 +62,41 @@ class Solution:
 
         return any(final_state in reachable for final_state in final_states)
 
+    def isMatch(self, s: str, p: str) -> bool:
+        # tokenize the pattern processing wildcard construct
+        tokens = []
+        idx = 0
+        while idx < len(p):
+            is_wildcard = idx < len(p) - 1 and p[idx + 1] == '*'
+            tokens.append((p[idx], is_wildcard))
+            idx += 1 if not is_wildcard else 2
+
+        # checks if first "i" characters match first "j" tokens in pattern
+        @functools.lru_cache(maxsize=None)
+        def match(i, j):
+            if i == 0 and j == 0:
+                return True
+
+            if i == 0:  # string is empty
+                return all(tokens[jj][1] for jj in range(j))  # match if all left are wildcard tokens
+
+            if j == 0:  # pattern is empty
+                return False
+
+            # both "i" and "j" are not 0
+            # recursion step
+            if tokens[j - 1][1]:  # is wildcard token
+                char_match = tokens[j - 1][0] in ['.', s[i - 1]]
+                return (
+                    char_match and match(i - 1, j) or
+                    match(i, j - 1)  # case where we expand wildcard into 0 chars
+                )
+            else:  # is not wildcard token
+                char_match = tokens[j - 1][0] in ['.', s[i - 1]]
+                return char_match and match(i - 1, j - 1)
+
+        return match(len(s), len(tokens))
+
 
 if __name__ == '__main__':
     x = Solution()
@@ -71,4 +108,5 @@ if __name__ == '__main__':
     # print(x.isMatch(s="aaa", p="a*a"))
     # print(x.isMatch(s="aaba", p="ab*a*c*a"))
     # print(x.isMatch(s="aaa", p="aaaa"))
-    print(x.isMatch(s="a", p="ab*"))
+    # print(x.isMatch(s="a", p="ab*"))
+    assert x.isMatch(s="a", p="ab*a") is False
