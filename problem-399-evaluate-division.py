@@ -40,6 +40,10 @@ class Solution:
 
                 visited.add(node)
 
+                # if we reached destination node -> no need to go any further
+                if node == b:
+                    break
+
                 for neighbor in neighbors.get(node, {}).keys():
                     if neighbor not in visited:
                         parent[neighbor] = node
