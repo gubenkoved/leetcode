@@ -1,4 +1,3 @@
-import functools
 from typing import List
 
 
@@ -6,32 +5,48 @@ class Solution:
     def maxProfit(self, prices: List[int]) -> int:
         n = len(prices)
 
-        @functools.lru_cache(maxsize=None)
-        def max_profit(from_day, to_day, trx_count) -> int:
-            if to_day - from_day < 1:
+        cache = {}
+
+        def max_profit(to_day, trx_count) -> int:
+            cache_key = (to_day, trx_count)
+            if cache_key in cache:
+                return cache[cache_key]
+
+            if to_day < 1:
                 return 0
 
             if trx_count == 1:
-                min_price_so_far = prices[from_day]
+                min_price_so_far = prices[0]
                 result = 0
-                for day in range(from_day + 1, to_day + 1):
+                for day in range(to_day + 1):
                     potential_profit = prices[day] - min_price_so_far
                     result = max(result, potential_profit)
                     min_price_so_far = min(min_price_so_far, prices[day])
+                cache[cache_key] = result
                 return result
 
             # recursive dive!
             result = 0
-            for day in range(from_day, to_day):
-                cur_result = max_profit(from_day=from_day, to_day=day, trx_count=trx_count - 1)
-                cur_result += max_profit(from_day=day + 1, to_day=to_day, trx_count=1)
+            for middle_day in range(to_day - 1):
+                cur_result = max_profit(to_day=middle_day, trx_count=trx_count - 1)
+
+                # now we have time from "day" for the last transaction
+                min_price_so_far = prices[middle_day + 1]
+                best_final_sell = 0
+                for final_sell_day in range(middle_day + 2, to_day + 1):
+                    potential_profit = prices[final_sell_day] - min_price_so_far
+                    best_final_sell = max(best_final_sell, potential_profit)
+                    min_price_so_far = min(min_price_so_far, prices[final_sell_day])
+
+                cur_result += best_final_sell
                 result = max(result, cur_result)
 
+            cache[cache_key] = result
             return result
 
         return max(
-            max_profit(from_day=0, to_day=n - 1, trx_count=2),
-            max_profit(from_day=0, to_day=n - 1, trx_count=1)
+            max_profit(to_day=n - 1, trx_count=1),
+            max_profit(to_day=n - 1, trx_count=2),
         )
 
 
