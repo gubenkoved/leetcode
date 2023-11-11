@@ -1,28 +1,23 @@
 from typing import List
-import heapq
 import math
 
 
 class Solution:
     def findMinArrowShots(self, points: List[List[int]]) -> int:
-        heap = []
-
-        for start, end in points:
-            heapq.heappush(heap, (end, start))
+        # sorting by end of interval ascending
+        points_sorted = sorted(points, key=lambda interval: interval[1])
 
         count = 0
         arrow_at = -math.inf
 
-        while heap:
-            # send arrow at the end of the first balloon by "end" ascending
-            end, start = heapq.heappop(heap)
-
+        for start, end in points_sorted:
+            # check if already burst!
             if start <= arrow_at:
-                # already burst!
-                pass
-            else:  # send a new arrow!
-                count += 1
-                arrow_at = end
+                continue
+
+            # send a new arrow!
+            count += 1
+            arrow_at = end
 
         return count
 
