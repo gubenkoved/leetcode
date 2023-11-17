@@ -7,6 +7,8 @@ Missing = object()
 
 
 class LinkedListItem(Generic[TValue]):
+    __slots__ = ['parent', 'value', 'next', 'prev']
+
     def __init__(self, value: TValue, parent: 'LinkedList[TValue]'):
         self.value: TValue = value
         self.parent: LinkedList[TValue] = parent
@@ -23,7 +25,7 @@ class LinkedList(Generic[TValue]):
         self.tail: Optional[LinkedListItem[TValue]] = None
 
     def delete(self, item: LinkedListItem[TValue]) -> None:
-        assert item.parent == self
+        # assert item.parent == self
 
         if item is self.head:
             return self.delete_head()
@@ -35,14 +37,14 @@ class LinkedList(Generic[TValue]):
         prev = item.prev
         next = item.next
 
-        assert prev is not None
-        assert next is not None
+        # assert prev is not None
+        # assert next is not None
 
         prev.next = next
         next.prev = prev
 
     def delete_head(self):
-        assert self.head is not None
+        # assert self.head is not None
         self.head = self.head.next
         if self.head:
             self.head.prev = None
@@ -50,7 +52,7 @@ class LinkedList(Generic[TValue]):
             self.tail = None
 
     def delete_tail(self):
-        assert self.tail is not None
+        # assert self.tail is not None
         self.tail = self.tail.prev
         if self.tail:
             self.tail.next = None
@@ -101,7 +103,7 @@ class FreqList(LinkedList[Tuple[int, 'LRUBucket']]):
         return self.tail
 
     def ensure_next_freq_bucket(self, freq_item: LinkedListItem[Tuple[int, 'LRUBucket']]):
-        assert freq_item.parent == self
+        # assert freq_item.parent == self
 
         next_frequency = freq_item.value[0] + 1
 
@@ -111,7 +113,7 @@ class FreqList(LinkedList[Tuple[int, 'LRUBucket']]):
             lru_bucket.freq_list_item = new_freq_item
             return new_freq_item
 
-        assert freq_item.prev.value[0] == next_frequency
+        # assert freq_item.prev.value[0] == next_frequency
 
         return freq_item.prev
 
