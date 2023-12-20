@@ -12,30 +12,7 @@ class Solution:
         extra_hi_count, extra_low_count = 0, 0
 
         # idx -> True if it was placed into high bucket
-        is_high = {}
-
-        # add first k elements
-        for idx in range(k):
-            if not hi and not low:
-                heapq.heappush(hi, (nums[idx], idx))
-                is_high[idx] = True
-            else:
-                if low and nums[idx] <= -low[0][0] or hi and nums[idx] < hi[0][0]:
-                    heapq.heappush(low, (-nums[idx], idx))
-                    is_high[idx] = False
-                else:
-                    heapq.heappush(hi, (nums[idx], idx))
-                    is_high[idx] = True
-
-            # balance out
-            if len(hi) > len(low) + 1:
-                popped, popped_idx = heapq.heappop(hi)
-                heapq.heappush(low, (-popped, popped_idx))
-                is_high[popped_idx] = False
-            elif len(low) > len(hi) + 1:
-                popped, popped_idx = heapq.heappop(low)
-                heapq.heappush(hi, (-popped, popped_idx))
-                is_high[popped_idx] = True
+        is_high = [None] * len(nums)
 
         def get_median():
             low_count = len(low) - extra_low_count
@@ -51,12 +28,9 @@ class Solution:
                 return -low[0][0]
 
         medians = []
-        medians.append(get_median())
 
         # process windows
-        for idx in range(k, len(nums)):
-            drop_idx = idx - k
-
+        for idx in range(len(nums)):
             if low and nums[idx] > -low[0][0] or hi and nums[idx] >= hi[0][0]:
                 heapq.heappush(hi, (nums[idx], idx))
                 is_high[idx] = True
@@ -64,10 +38,13 @@ class Solution:
                 heapq.heappush(low, (-nums[idx], idx))
                 is_high[idx] = False
 
-            if is_high[drop_idx]:
-                extra_hi_count += 1
-            else:
-                extra_low_count += 1
+            # check if there are some window drop-outs
+            if idx >= k:
+                drop_idx = idx - k
+                if is_high[drop_idx]:
+                    extra_hi_count += 1
+                else:
+                    extra_low_count += 1
 
             # rebalance
             while True:
@@ -100,10 +77,8 @@ class Solution:
                 heapq.heappop(low)
                 extra_low_count -= 1
 
-            assert extra_hi_count >= 0
-            assert extra_low_count >= 0
-
-            medians.append(get_median())
+            if idx >= k - 1:
+                medians.append(get_median())
 
         return medians
 
