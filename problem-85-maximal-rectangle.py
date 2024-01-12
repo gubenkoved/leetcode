@@ -133,7 +133,7 @@ class Solution:
 
             # sequence of blocks with non-decreasing height and specific "width"
             stack = [
-                (-1, 0),  # (height, width)
+                (0, 0),  # (height, width)
             ]
             best = 0
             for num in histogram:
@@ -150,7 +150,7 @@ class Solution:
                     rolling_height = math.inf
                     rolling_width = 0
 
-                    while stack[-1][0] >= num:
+                    while stack and stack[-1][0] >= num:
                         height, width = stack.pop(-1)
                         rolling_height = min(rolling_height, height)
                         rolling_width += width
