@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 # Given a rows x cols binary matrix filled with 0's and 1's, find the largest
@@ -5,7 +6,7 @@ from typing import List
 
 
 class Solution:
-    # O(n^4) ... or might be O(3) with optimizations to short cut and it passes
+    # O(n^4) ... or might be O(n^3) with optimizations to shortcut and it passes
     # comparing to O(n^3) w/o shortcuts that does not
     def maximalRectangle_v1(self, matrix: List[List[str]]) -> int:
         rows = len(matrix)
@@ -108,18 +109,77 @@ class Solution:
                         break
         return max_area
 
+    def maximalRectangle_v3(self, matrix):
+        # looked up the optimal solution idea -- convert to set of n max rectangle
+        # in histogram problems in O(n^2); each of these is solvable in O(n)
+        # so result complexity is also O(n^2)
+
+        rows, cols = len(matrix), len(matrix[0])
+
+        # amount of consecutive "1" in column from top
+        aux = [[0] * cols for _ in range(rows)]
+
+        for row in range(rows):
+            for col in range(cols):
+                if matrix[row][col] == '0':
+                    continue
+                if row == '0':
+                    aux[row][col] = 1
+                else:
+                    aux[row][col] = aux[row - 1][col] + 1
+
+        def max_rectangle_in_histogram(histogram):
+            histogram.append(0)
+
+            # sequence of blocks with non-decreasing height and specific "width"
+            stack = [
+                (-1, 0),  # (height, width)
+            ]
+            best = 0
+            for num in histogram:
+                # build-up phase
+                if num >= stack[-1][0]:
+                    stack.append((num, 1))
+                else:  # collapse phase
+                    # we just hit a number which is less than the biggest from the
+                    # left, it means that these bigger blocks will be kind of
+                    # useless to the right as they are smaller than element to the
+                    # right and will not contribute to the biggest rectangle over the
+                    # value of the smallest on to the right
+
+                    rolling_height = math.inf
+                    rolling_width = 0
+
+                    while stack[-1][0] >= num:
+                        height, width = stack.pop(-1)
+                        rolling_height = min(rolling_height, height)
+                        rolling_width += width
+                        best = max(best, rolling_width * rolling_height)
+
+                    # okay, now we collapsed all the way so that there are no blocks
+                    # in the stack bigger than "num" by size; add the block that
+                    # we will be able to consider further
+                    stack.append(
+                        (num, rolling_width + 1)
+                    )
+
+            return best
+
+        # solve max histograms
+        return max(max_rectangle_in_histogram(row) for row in aux)
+
     def maximalRectangle(self, matrix):
-        return self.maximalRectangle_v2(matrix)
+        return self.maximalRectangle_v3(matrix)
 
 
 if __name__ == '__main__':
     x = Solution()
-    # print(x.maximalRectangle(
-    #     [["1", "0", "1", "0", "0"],
-    #      ["1", "0", "1", "1", "1"],
-    #      ["1", "1", "1", "1", "1"],
-    #      ["1", "0", "0", "1", "0"]]
-    # ))
+    print(x.maximalRectangle(
+        [["1", "0", "1", "0", "0"],
+         ["1", "0", "1", "1", "1"],
+         ["1", "1", "1", "1", "1"],
+         ["1", "0", "0", "1", "0"]]
+    ))
     # f = open('input.txt')
     # matrix = eval(f.read())
     # matrix = [["1"] * 200 for _ in range(200)]
