@@ -1,19 +1,24 @@
-from collections import Counter
+from functools import lru_cache
 
 
 class Solution:
+    @lru_cache(maxsize=None)
     def isScramble(self, s1: str, s2: str) -> bool:
         # print('%s, %s' % (s1, s2))
-
-        assert len(s1) == len(s2)
 
         if s1 == s2:
             return True
 
-        if Counter(s1) != Counter(s2):
-            return False
-
         n = len(s1)
+        counts = [0] * 26
+
+        for idx in range(n):
+            counts[ord(s1[idx]) - ord('a')] += 1
+            counts[ord(s2[idx]) - ord('a')] -= 1
+
+        for idx in range(26):
+            if counts[idx] != 0:
+                return False
 
         for idx in range(1, n):
             if self.isScramble(s1[:idx], s2[:idx]) and self.isScramble(s1[idx:], s2[idx:]):
