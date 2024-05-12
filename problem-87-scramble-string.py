@@ -1,27 +1,25 @@
+from collections import Counter
+
+
 class Solution:
     def isScramble(self, s1: str, s2: str) -> bool:
+        # print('%s, %s' % (s1, s2))
+
         assert len(s1) == len(s2)
 
-        def scramble(s):
-            # print('scramble(%s)' % s)
+        if s1 == s2:
+            return True
 
-            yield s
+        if Counter(s1) != Counter(s2):
+            return False
 
-            if len(s) == 1:
-                return
+        n = len(s1)
 
-            for idx in range(1, len(s)):
-                left = s[:idx]
-                right = s[idx:]
+        for idx in range(1, n):
+            if self.isScramble(s1[:idx], s2[:idx]) and self.isScramble(s1[idx:], s2[idx:]):
+                return True
 
-                for a in scramble(left):
-                    for b in scramble(right):
-                        yield a + b
-                        yield b + a
-
-        for x in scramble(s1):
-            # print('%s' % x)
-            if x == s2:
+            if self.isScramble(s1[:idx], s2[n-idx:]) and self.isScramble(s1[idx:], s2[:n-idx]):
                 return True
 
         return False
@@ -29,7 +27,8 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
-    # assert x.isScramble('ab', 'ba')
-    # assert x.isScramble('great', 'rgeat')
-    # assert not x.isScramble('abcde', 'caebd')
+    assert x.isScramble('ab', 'ba')
+    assert x.isScramble('abc', 'bca')
+    assert x.isScramble('great', 'rgeat')
+    assert not x.isScramble('abcde', 'caebd')
     assert x.isScramble('abcdbdacbdac', 'bdacabcdbdac')
