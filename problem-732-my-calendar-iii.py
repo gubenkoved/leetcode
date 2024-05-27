@@ -1,24 +1,28 @@
-import heapq
 from typing import List, Tuple
+import bisect
+
+
+# process END of the interval if it is the same time before the START
+START = 1
+END = 0
 
 
 class MyCalendarThree:
     def __init__(self):
-        self.intervals: List[Tuple[int, str]] = []
+        self.intervals: List[Tuple[int, int]] = []
 
     def book(self, startTime: int, endTime: int) -> int:
-        heapq.heappush(self.intervals, (startTime, 'start'))  # O(1)
-        heapq.heappush(self.intervals, (endTime, 'end'))  # O(1)
-        temp = list(self.intervals)  # O(n)
+        # O(n)
+        bisect.insort(self.intervals, (startTime, START))
+        bisect.insort(self.intervals, (endTime, END))
         max_count = 0
         cur_count = 0
-        # O(n*log(n)) overall
-        while temp:  # O(n)
-            time, type_ = heapq.heappop(temp)  # O(logn)
-            if type_ == 'start':
+        # O(n)
+        for time, event in self.intervals:
+            if event == START:
                 cur_count += 1
                 max_count = max(max_count, cur_count)
-            elif type_ == 'end':
+            elif event == END:
                 cur_count -= 1
         return max_count
 
