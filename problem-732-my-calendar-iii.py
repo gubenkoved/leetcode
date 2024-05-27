@@ -1,51 +1,26 @@
-import bisect
+import heapq
 from typing import List, Tuple
 
 
 class MyCalendarThree:
-
     def __init__(self):
-        self.intervals: List[Tuple[int, int]] = []
+        self.intervals: List[Tuple[int, str]] = []
 
-    # naive implementation via rearranging all the intervals every time from the
-    # very start
     def book(self, startTime: int, endTime: int) -> int:
-        bisect.insort(self.intervals, (startTime, endTime))
-        layers = [[]]
-        for interval in self.intervals:
-            self.book_impl(layers, *interval)
-        return len(layers)
-
-    def book_impl(self, layers, startTime, endTime):
-
-        is_handled = False
-        for layer_idx in range(len(layers)):
-            layer = layers[layer_idx]
-
-            candidate_idx = 0
-            while candidate_idx != len(layer) and layer[candidate_idx][0] < startTime:
-                candidate_idx += 1
-
-            # now check that in this layer it does not intersect with neither left
-            # nor right interval
-            fits = True
-            if candidate_idx > 0:
-                if startTime < layer[candidate_idx - 1][1]:
-                    fits = False
-            if candidate_idx != len(layer):
-                if endTime > layer[candidate_idx][0]:
-                    fits = False
-
-            if fits:
-                layer.insert(candidate_idx, (startTime, endTime))
-                # print('adding (%s, %s) to layer %s' % (startTime, endTime, layer_idx))
-                is_handled = True
-                break
-
-        if not is_handled:
-            # adding a new layer
-            # print('adding new layer for (%s, %s)' % (startTime, endTime))
-            layers.append([(startTime, endTime)])
+        heapq.heappush(self.intervals, (startTime, 'start'))  # O(1)
+        heapq.heappush(self.intervals, (endTime, 'end'))  # O(1)
+        temp = list(self.intervals)  # O(n)
+        max_count = 0
+        cur_count = 0
+        # O(n*log(n)) overall
+        while temp:  # O(n)
+            time, type_ = heapq.heappop(temp)  # O(logn)
+            if type_ == 'start':
+                cur_count += 1
+                max_count = max(max_count, cur_count)
+            elif type_ == 'end':
+                cur_count -= 1
+        return max_count
 
 
 if __name__ == '__main__':
