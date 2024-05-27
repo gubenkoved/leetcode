@@ -1,15 +1,26 @@
+import bisect
 from typing import List, Tuple
 
 
 class MyCalendarThree:
 
     def __init__(self):
-        self.layers: List[List[Tuple[int, int]]] = [[]]
+        self.intervals: List[Tuple[int, int]] = []
 
+    # naive implementation via rearranging all the intervals every time from the
+    # very start
     def book(self, startTime: int, endTime: int) -> int:
+        bisect.insort(self.intervals, (startTime, endTime))
+        layers = [[]]
+        for interval in self.intervals:
+            self.book_impl(layers, *interval)
+        return len(layers)
+
+    def book_impl(self, layers, startTime, endTime):
+
         is_handled = False
-        for layer_idx in range(len(self.layers)):
-            layer = self.layers[layer_idx]
+        for layer_idx in range(len(layers)):
+            layer = layers[layer_idx]
 
             candidate_idx = 0
             while candidate_idx != len(layer) and layer[candidate_idx][0] < startTime:
@@ -34,9 +45,7 @@ class MyCalendarThree:
         if not is_handled:
             # adding a new layer
             # print('adding new layer for (%s, %s)' % (startTime, endTime))
-            self.layers.append([(startTime, endTime)])
-
-        return len(self.layers)
+            layers.append([(startTime, endTime)])
 
 
 if __name__ == '__main__':
