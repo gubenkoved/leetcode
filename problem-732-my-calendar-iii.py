@@ -4,7 +4,7 @@ import bisect
 
 # process END of the interval if it is the same time before the START
 START = 1
-END = 0
+END = -1
 
 
 class MyCalendarThree:
@@ -18,12 +18,9 @@ class MyCalendarThree:
         max_count = 0
         cur_count = 0
         # O(n)
-        for time, event in self.intervals:
-            if event == START:
-                cur_count += 1
-                max_count = max(max_count, cur_count)
-            elif event == END:
-                cur_count -= 1
+        for time, delta in self.intervals:
+            cur_count += delta
+            max_count = max(max_count, cur_count)
         return max_count
 
 
