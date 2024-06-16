@@ -28,16 +28,21 @@ class Solution:
             result = ' '.join(words)
             return result + ' ' * (maxWidth - len(result))
 
-        def min_len(line):
-            return sum(len(x) for x in line) + len(line) - 1
+        def min_len(line_words_len, line_words_count, extra_word):
+            if line_words_count == 0:
+                return len(extra_word)
+            return line_words_len + line_words_count + len(extra_word)
 
         line = []
+        line_words_len = 0
         for word in words:
-            if min_len(line + [word]) <= maxWidth:
+            if min_len(line_words_len, len(line), word) <= maxWidth:
                 line.append(word)
+                line_words_len += len(word)
             else:
                 lines.append(line)
                 line = [word]
+                line_words_len = len(word)
 
         if line:
             lines.append(line)
