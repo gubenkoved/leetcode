@@ -55,6 +55,28 @@ class Solution:
 
         return list(reversed(path))
 
+    def findItinerary3(self, tickets: List[List[str]]) -> List[str]:
+        # same Hierholzer's algorithm
+        outgoing = defaultdict(list)
+
+        for source, dest in tickets:
+            outgoing[source].append(dest)
+
+        for source in outgoing:
+            outgoing[source].sort(reverse=True)
+
+        path = []
+
+        def find(cur):
+            while outgoing[cur]:
+                next_dest = outgoing[cur].pop(-1)
+                find(next_dest)
+            path.append(cur)
+
+        find('JFK')
+
+        return list(reversed(path))
+
 
 case_idx = 0
 
@@ -86,8 +108,9 @@ if __name__ == '__main__':
     def case(tickets):
         visualize(tickets)
         # print(x.findItinerary(tickets))
-        print(x.findItinerary2(tickets))
-        assert x.findItinerary2(tickets) == x.findItinerary(tickets)
+        # print(x.findItinerary2(tickets))
+        print(x.findItinerary3(tickets))
+        assert x.findItinerary3(tickets) == x.findItinerary(tickets)
 
     case([["MUC", "LHR"], ["JFK", "MUC"], ["SFO", "SJC"], ["LHR", "SFO"]])
     case([["EZE", "AXA"], ["TIA", "ANU"], ["ANU", "JFK"], ["JFK", "ANU"], ["ANU", "EZE"], ["TIA", "ANU"], ["AXA", "TIA"],
