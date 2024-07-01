@@ -31,6 +31,30 @@ class Solution:
 
         return find('JFK')
 
+    def findItinerary2(self, tickets: List[List[str]]) -> List[str]:
+        # https://www.topcoder.com/thrive/articles/eulerian-path-and-circuit-in-graphs
+
+        available = defaultdict(lambda: defaultdict(int))
+
+        for source, dest in tickets:
+            available[source][(source, dest)] += 1
+
+        path = []
+
+        def find(cur):
+            for next_ticket in sorted(available[cur]):
+                if available[cur][next_ticket] == 0:
+                    continue
+                # it is enough to traverse all the edges just once!
+                available[cur][next_ticket] -= 1
+                next_dest = next_ticket[1]
+                find(next_dest)
+            path.append(cur)
+
+        find('JFK')
+
+        return list(reversed(path))
+
 
 case_idx = 0
 
@@ -61,7 +85,9 @@ if __name__ == '__main__':
 
     def case(tickets):
         visualize(tickets)
-        print(x.findItinerary(tickets))
+        # print(x.findItinerary(tickets))
+        print(x.findItinerary2(tickets))
+        assert x.findItinerary2(tickets) == x.findItinerary(tickets)
 
     case([["MUC", "LHR"], ["JFK", "MUC"], ["SFO", "SJC"], ["LHR", "SFO"]])
     case([["EZE", "AXA"], ["TIA", "ANU"], ["ANU", "JFK"], ["JFK", "ANU"], ["ANU", "EZE"], ["TIA", "ANU"], ["AXA", "TIA"],
