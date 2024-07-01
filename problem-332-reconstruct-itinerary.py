@@ -4,17 +4,16 @@ from collections import defaultdict
 
 class Solution:
     def findItinerary(self, tickets: List[List[str]]) -> List[str]:
-        tickets_by_source = defaultdict(lambda: defaultdict(int))
-        all_possible = set()
+        available = defaultdict(lambda: defaultdict(int))
 
         for source, dest in tickets:
-            tickets_by_source[source][(source, dest)] += 1
-            all_possible.add(source)
-            all_possible.add(dest)
+            available[source][(source, dest)] += 1
 
-        results = []
+        path = ['JFK']
 
-        def find(cur, path, available):
+        def find(cur):
+            nonlocal path
+
             if len(path) == len(tickets) + 1:
                 return path
 
@@ -24,13 +23,13 @@ class Solution:
                 available[cur][next_ticket] -= 1
                 next_dest = next_ticket[1]
                 path.append(next_dest)
-                sub_result = find(next_dest, path, available)
+                sub_result = find(next_dest)
                 if sub_result is not None:
                     return sub_result
                 path.pop(-1)
                 available[cur][next_ticket] += 1
 
-        return find('JFK', ['JFK'], tickets_by_source)
+        return find('JFK')
 
 
 case_idx = 0
@@ -51,7 +50,8 @@ def visualize(tickets):
             nodes.add(dest)
         g.add_edge(source, dest)
     # g.barnes_hut()
-    g.force_atlas_2based()
+    # g.force_atlas_2based()
+    g.set_edge_smooth('discrete')
     g.toggle_physics(False)
     g.write_html('problem-332-case-%s.html' % case_idx, open_browser=False)
 
@@ -66,7 +66,6 @@ if __name__ == '__main__':
     case([["MUC", "LHR"], ["JFK", "MUC"], ["SFO", "SJC"], ["LHR", "SFO"]])
     case([["EZE", "AXA"], ["TIA", "ANU"], ["ANU", "JFK"], ["JFK", "ANU"], ["ANU", "EZE"], ["TIA", "ANU"], ["AXA", "TIA"],
           ["TIA", "JFK"], ["ANU", "TIA"], ["JFK", "TIA"]])
-    # limits exceeded
     case([["AXA", "EZE"], ["EZE", "AUA"], ["ADL", "JFK"], ["ADL", "TIA"], ["AUA", "AXA"], ["EZE", "TIA"], ["EZE", "TIA"],
          ["AXA", "EZE"], ["EZE", "ADL"], ["ANU", "EZE"], ["TIA", "EZE"], ["JFK", "ADL"], ["AUA", "JFK"], ["JFK", "EZE"],
          ["EZE", "ANU"], ["ADL", "AUA"], ["ANU", "AXA"], ["AXA", "ADL"], ["AUA", "JFK"], ["EZE", "ADL"], ["ANU", "TIA"],
@@ -82,3 +81,6 @@ if __name__ == '__main__':
          ["AXA", "TIA"], ["ADL", "AXA"], ["EZE", "AXA"], ["AXA", "JFK"], ["JFK", "AUA"], ["ANU", "ADL"], ["AXA", "TIA"],
          ["ANU", "AUA"], ["JFK", "EZE"], ["AXA", "ADL"], ["TIA", "EZE"], ["JFK", "AXA"], ["AXA", "ADL"], ["EZE", "AUA"],
          ["AXA", "ANU"], ["ADL", "EZE"], ["AUA", "EZE"]])
+    case([['JFK', 'AAA'], ['AAA', 'BBB'], ['BBB', 'JFK'], ['JFK', 'CCC'],
+          ['CCC', 'DDD'], ['CCC', 'DDD'], ['DDD', 'EEE'], ['EEE', 'FFF'],
+          ['FFF', 'CCC'], ['DDD', 'JFK']])
