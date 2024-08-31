@@ -3,29 +3,29 @@ import math
 
 
 class Solution:
-    @functools.lru_cache(maxsize=None)
     def strangePrinter(self, s: str) -> int:
-        if not s:
-            return 0
 
-        if len(set(s)) == 1:
-            return 1
+        @functools.lru_cache(maxsize=None)
+        def dp(i, j):
+            if i == j:
+                return 1
 
-        result = math.inf
+            result = math.inf
 
-        for k in range(1, len(s)):
-            left, right = s[:k], s[k:]
-            result = min(
-                result,
-                self.strangePrinter(left) + self.strangePrinter(right)
-            )
+            for k in range(i, j):
+                result = min(
+                    result,
+                    dp(i, k) + dp(k + 1, j)
+                )
 
-        # this part is not really clear... had to look it up why this -1
-        # is needed
-        if s[0] == s[-1]:
-            result -= 1
+            # this part is not really clear... had to look it up why this -1
+            # is needed
+            if s[i] == s[j]:
+                result -= 1
 
-        return result
+            return result
+
+        return dp(0, len(s) - 1)
 
 
 if __name__ == '__main__':
