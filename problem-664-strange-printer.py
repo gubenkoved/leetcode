@@ -13,16 +13,17 @@ class Solution:
 
         result = math.inf
 
-        for l in range(len(s)):
-            for r in range(l + 1, len(s) + 1):  # exclusive
-                # imagine we type [l, r) range
-                c = s[l]
-                result = min(
-                    result,
-                    self.strangePrinter(s[0:l]) +
-                    (1 + self.strangePrinter(s[l:r].lstrip(c).rstrip(c))) +
-                    self.strangePrinter(s[r:])
-                )
+        for k in range(1, len(s)):
+            left, right = s[:k], s[k:]
+            result = min(
+                result,
+                self.strangePrinter(left) + self.strangePrinter(right)
+            )
+
+        # this part is not really clear... had to look it up why this -1
+        # is needed
+        if s[0] == s[-1]:
+            result -= 1
 
         return result
 
@@ -30,6 +31,7 @@ class Solution:
 if __name__ == '__main__':
     x = Solution()
     print(x.strangePrinter('aaabbb'))
+    print(x.strangePrinter('aaabbbaaaabbbbaaaa'))
     print(x.strangePrinter('aba'))
     print(x.strangePrinter('t'))
     print(x.strangePrinter('gtg'))
@@ -38,3 +40,4 @@ if __name__ == '__main__':
     print(x.strangePrinter('tbgtgbt'))
     print(x.strangePrinter('tbgtgbtb'))
     print(x.strangePrinter('baacdddaaddaaaaccbddbcabdaabdbbcdcbbbacbddcabcaaa'))
+    print(x.strangePrinter('dcddbaccadbccddabbcdcdbddbaabcbbdaccacbddcdabdb'))
