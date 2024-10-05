@@ -26,6 +26,9 @@ class Solution:
         cur_sum = 0
         prefix_sum_reminder_to_rightmost_idx_map = {}
 
+        # handles edge case for whole prefix being dropped
+        prefix_sum_reminder_to_rightmost_idx_map[0] = -1
+
         for idx in range(n):
             cur_sum += nums[idx]
             cur_sum_reminder = cur_sum % p
@@ -44,14 +47,11 @@ class Solution:
             # 0 + r - (PS mod p)    if (PS mod p) <= r
             # p + r - (PS mod p)    otherwise
 
-            # whole prefix is dropped
-            if cur_sum_reminder == reminder:
-                result = min(result, idx + 1)
-
-            if cur_sum_reminder >= reminder:
-                target_reminder = cur_sum_reminder - reminder
-            else:
-                target_reminder = p + (cur_sum_reminder - reminder)
+            # if cur_sum_reminder >= reminder:
+            #     target_reminder = cur_sum_reminder - reminder
+            # else:
+            #     target_reminder = p + (cur_sum_reminder - reminder)
+            target_reminder = (p + (cur_sum_reminder - reminder)) % p
 
             if target_reminder in prefix_sum_reminder_to_rightmost_idx_map:
                 result = min(result, idx - prefix_sum_reminder_to_rightmost_idx_map[target_reminder])
@@ -69,6 +69,7 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
+    print(x.minSubarray([1, 2, 3, 13], 13))
     print(x.minSubarray([3, 1, 4, 2], 6))
     print(x.minSubarray([6, 3, 5, 2], 9))
     print(x.minSubarray([1, 2, 3], 3))
