@@ -19,30 +19,32 @@ class Solution:
                 adjacent[n1].append(n2)
                 adjacent[n2].append(n1)
 
-            def compute(node, node_radius, visited):
-                assert node not in visited
-                visited.add(node)
-
+            def compute(node, node_radius):
                 if node_radius < 0:
                     return 0
 
-                node_result = 1  # itself
+                # bfs and given it is a tree, just do not return to where you
+                # came to avoid cycles (no need to track all visited nodes)
+                queue = [(node, None, 0)]  # node, parent_node, distance
+                node_counter = 0
 
-                # stop condition
-                if node_radius == 0:
-                    return node_result
+                while queue:
+                    cur_node, parent_node, cur_node_dist = queue.pop(0)
+                    node_counter += 1
 
-                for neighbor in adjacent[node]:
-                    if neighbor in visited:
-                        continue
-                    node_result += compute(neighbor, node_radius - 1, visited)
+                    if cur_node_dist < node_radius:
+                        for neighbor in adjacent[cur_node]:
+                            # do not return back
+                            if neighbor == parent_node:
+                                continue
+                            queue.append((neighbor, cur_node, cur_node_dist + 1))
 
-                return node_result
+                return node_counter
 
             result_map = {}
 
             for n in adjacent:
-                result_map[n] = compute(n, radius, set())
+                result_map[n] = compute(n, radius)
 
             return result_map
 
@@ -67,6 +69,6 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
-    # print(x.maxTargetNodes(edges1=[[0, 1], [0, 2], [2, 3], [2, 4]],
-    #                        edges2=[[0, 1], [0, 2], [0, 3], [2, 7], [1, 4], [4, 5], [4, 6]], k=2))
+    print(x.maxTargetNodes(edges1=[[0, 1], [0, 2], [2, 3], [2, 4]],
+                           edges2=[[0, 1], [0, 2], [0, 3], [2, 7], [1, 4], [4, 5], [4, 6]], k=2))
     print(x.maxTargetNodes(edges1=[[0, 1]], edges2=[[0, 1]], k=0))
