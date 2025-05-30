@@ -25,7 +25,9 @@ class Solution:
 
         best, best_node = float('inf'), None
         for x in range(n):
-            d = max(d1.get(x, float('inf')), d2.get(x, float('inf')))
+            if x not in d1 or x not in d2:
+                continue
+            d = max(d1[x], d2[x])
             if d < best:
                 best = d
                 best_node = x
@@ -39,3 +41,4 @@ class Solution:
 if __name__ == '__main__':
     s = Solution()
     print(s.closestMeetingNode(edges = [2,2,3,-1], node1 = 0, node2 = 1))
+    print(s.closestMeetingNode([5,4,5,4,3,6,-1], 0, 1))
