@@ -1,40 +1,22 @@
 from typing import List
-import heapq
+from collections import deque
 
 
 class Solution:
     def closestMeetingNode(self, edges: List[int], node1: int, node2: int) -> int:
-        adjacent = {}
-
-        for source, target in enumerate(edges):
-            if target == -1:
-                continue
-            if source not in adjacent:
-                adjacent[source] = []
-            adjacent[source].append(target)
-
         n = len(edges)
 
         def distances_from(node):
             dist_map = {}
-            visited = set()
-            queue = [
-                (0, node)
-            ]
+            queue = deque([(0, node)])
 
             while queue:
-                dist, cur = heapq.heappop(queue)
-
-                if cur in visited:
+                dist, cur = queue.popleft()
+                if cur in dist_map:
                     continue
-
-                visited.add(cur)
                 dist_map[cur] = dist
-
-                for neighbor in adjacent.get(cur, []):
-                    if neighbor in visited:
-                        continue
-                    heapq.heappush(queue, (1 + dist, neighbor))
+                if edges[cur] != -1:
+                    queue.append((dist + 1, edges[cur]))
 
             return dist_map
 
