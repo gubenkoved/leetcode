@@ -5,7 +5,7 @@ from typing import List
 class Solution:
     def maxTargetNodes(self, edges1: List[List[int]], edges2: List[List[int]]) -> List[int]:
 
-        def distances_from(edges, node) -> dict[int, int]:
+        def distances_from(edges, node):
             adjacent = {}
             for source, target in edges:
                 if source not in adjacent:
@@ -16,37 +16,34 @@ class Solution:
                 adjacent[target].append(source)
 
             dist_map = {}
+            even_count, odd_count = 0, 0
             queue = collections.deque([(node, 0, None)])
             while queue:
                 cur, cur_dist, parent = queue.popleft()
                 dist_map[cur] = cur_dist
 
+                if cur_dist % 2 == 0:
+                    even_count += 1
+                else:
+                    odd_count += 1
+
                 for neighbor in adjacent[cur]:
                     if neighbor == parent:
                         continue
                     queue.append((neighbor, cur_dist + 1, cur))
-            return dist_map
+            return dist_map, even_count, odd_count
 
-        def summarize(dist_map: dict[int, int]) -> tuple[int, int]:
-            even_count = len(list(x for x in dist_map.values() if x % 2 == 0))
-            return even_count, len(dist_map) - even_count
+        d1, d1_even, d1_odd = distances_from(edges1, 0)
+        d2, d2_even, d2_odd = distances_from(edges2, 0)
 
-        d1 = distances_from(edges1, 0)
-        d2 = distances_from(edges2, 0)
+        d2_best = max(d2_even, d2_odd)
 
-        d1_even, d1_odd = summarize(d1)
-        d2_even, d2_odd = summarize(d2)
+        n = len(edges1) + 1
 
-        n, m = len(edges1) + 1, len(edges2) + 1
-
-        result = []
-        for x in range(n):
-            if d1[x] % 2 == 0:
-                result.append(d1_even + max(d2_even, d2_odd))
-            else:
-                result.append(d1_odd + max(d2_even, d2_odd))
-
-        return result
+        return [
+            (d1_even + d2_best) if d1[x] % 2 == 0 else (d1_odd + d2_best)
+            for x in range(n)
+        ]
 
 
 if __name__ == '__main__':
