@@ -1,31 +1,28 @@
 from typing import List
-import heapq
 
 
 class Solution:
     def isZeroArray(self, nums: List[int], queries: List[List[int]]) -> bool:
-        starts_heap = []
-        ends_heap = []
+        starts_map = {}
+        ends_map = {}
         for start, end in queries:
-            heapq.heappush(starts_heap, start)
-            heapq.heappush(ends_heap, end)
+            if start not in starts_map:
+                starts_map[start] = 0
+            if end not in ends_map:
+                ends_map[end] = 0
+            starts_map[start] += 1
+            ends_map[end] += 1
 
         n = len(nums)
         depth = 0
 
         for idx in range(n):
-            # process all the range openings which are hit
-            while starts_heap and starts_heap[0] <= idx:
-                depth += 1
-                heapq.heappop(starts_heap)
+            depth += starts_map.get(idx, 0)
 
             if nums[idx] > depth:
                 return False
 
-            # process ends
-            while ends_heap and ends_heap[0] <= idx:
-                depth -= 1
-                heapq.heappop(ends_heap)
+            depth -= ends_map.get(idx, 0)
 
         return True
 
@@ -34,3 +31,4 @@ if __name__ == '__main__':
     x = Solution()
     print(x.isZeroArray(nums = [1,0,1], queries = [[0,2]]))
     print(x.isZeroArray([4,3,2,1], queries = [[1,3],[0,2]]))
+    print(x.isZeroArray([1, 8], [[1,1],[0,1],[1,1],[1,1],[1,1],[0,0],[0,0],[1,1],[1,1],[1,1],[0,0],[0,1],[1,1],[1,1],[1,1]]))
