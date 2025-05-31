@@ -27,19 +27,22 @@ def is_valid_match(col1: tuple, col2: tuple):
 
 @functools.cache
 def f(m, n):
-    # base case
-    if n == 1:
-        return {col: 1 for col in gen(m)}
-    result = {}  # col -> counter
-    prev_result = f(m, n - 1)
-    for prev_col, prev_count in prev_result.items():
-        for col in gen(m):
-            if not is_valid_match(prev_col, col):
-                continue
-            if col not in result:
-                result[col] = 0
-            result[col] += prev_count
-    return result
+    counts_map = {}  # col -> count
+    for col in range(n):
+        if col == 0:
+            counts_map = {col: 1 for col in gen(m)}
+        else:
+            # other columns can be computed just using the previous state
+            new_counts_map = {}
+            for prev_col, prev_count in counts_map.items():
+                for col in gen(m):
+                    if not is_valid_match(prev_col, col):
+                        continue
+                    if col not in new_counts_map:
+                        new_counts_map[col] = 0
+                    new_counts_map[col] += prev_count
+            counts_map = new_counts_map
+    return counts_map
 
 
 class Solution:
@@ -55,3 +58,4 @@ if __name__ == '__main__':
     print(x.colorTheGrid(1, 2))
     print(x.colorTheGrid(2, 2))
     print(x.colorTheGrid(5, 5))
+    print(x.colorTheGrid(5, 1000))
