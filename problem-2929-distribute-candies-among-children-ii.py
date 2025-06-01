@@ -15,10 +15,9 @@ def dist_2(n, limit):
 
 class Solution:
     def distributeCandies(self, n: int, limit: int) -> int:
-        result = 0
-        for q in range(max(0, n - 2 * limit), min(n, limit) + 1):
-            result += dist_2(n - q, limit)
-        return result
+        return sum(
+            dist_2(n - q, limit)
+            for q in range(max(0, n - 2 * limit), min(n, limit) + 1))
 
 
 if __name__ == '__main__':
