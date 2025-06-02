@@ -28,8 +28,6 @@ class Solution:
 
             # simulate a processing step
             offset -= 1
-            if offset < 0:
-                offset += n
 
             # update the a/b counts using the z counts we had on that step
             set(0, at(0) + z_count)
