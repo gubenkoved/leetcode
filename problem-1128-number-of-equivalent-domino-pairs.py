@@ -7,13 +7,8 @@ class Solution:
         for x, y in dominoes:
             if x > y:
                 x, y = y, x
-            k = (x, y)
+            k = x * 10 + y
             if k not in m:
                 m[k] = 0
             m[k] += 1
-        result = 0
-        for g in m.values():
-            if g == 0:
-                continue
-            result += (g * (g - 1)) // 2
-        return result
+        return sum(((g * (g - 1)) // 2) for g in m.values() if g != 0)
