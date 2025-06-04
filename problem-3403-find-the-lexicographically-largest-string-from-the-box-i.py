@@ -2,12 +2,12 @@ class Solution:
     def answerString(self, word: str, numFriends: int) -> str:
         if numFriends == 1:
             return word
+        l = len(word) - numFriends + 1
         best = word[0]
-        for k in range(1, len(word) - numFriends + 1 + 1):
-            for idx in range(0, len(word) - k + 1):
-                candidate = word[idx:idx + k]
-                if candidate > best:
-                    best = candidate
+        for idx in range(len(word)):
+            candidate = word[idx:idx + l]
+            if candidate > best:
+                best = candidate
         return best
 
 if __name__ == '__main__':
