@@ -51,11 +51,12 @@ class Solution:
         ans = 1
 
         while True:
-            c = c2(ans, n)
-
-            while ans % 10 != 9 and c2(ans + 1, n) <= k:
-                ans += 1
+            while True:
                 c = c2(ans, n)
+                cn = c2(ans + 1, n)
+                if ans % 10 == 9 or cn > k:
+                    break
+                ans += 1
 
             if c == k:
                 return ans
