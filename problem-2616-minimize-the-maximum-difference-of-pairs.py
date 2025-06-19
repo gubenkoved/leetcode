@@ -1,4 +1,3 @@
-import functools
 from typing import List
 
 
@@ -6,21 +5,15 @@ class Solution:
     def minimizeMax(self, nums: List[int], p: int) -> int:
         nums.sort()
 
-        @functools.lru_cache(maxsize=None)
-        def check(start_idx, pairs, max_diff) -> True:
-            if pairs == 0:
-                return True
-
-            left = len(nums) - start_idx
-
-            if left < pairs * 2:
-                return False
-
-            if nums[start_idx + 1] - nums[start_idx] <= max_diff:
-                if check(start_idx + 2, pairs - 1, max_diff):
-                    return True
-
-            return check(start_idx + 1, pairs, max_diff)
+        def count_pairs(threshold):
+            idx = 0
+            result = 0
+            while idx < len(nums) - 1:
+                if nums[idx + 1] - nums[idx] <= threshold:
+                    result += 1
+                    idx += 1
+                idx += 1
+            return result
 
         # solution is in (l; r]
         l, r = -1, 10 ** 9
@@ -28,8 +21,9 @@ class Solution:
         while l < r - 1:
             mid = (l + r) // 2
 
-            check.cache_clear()
-            is_possible = check(0, p, max_diff=mid)
+            found_pairs = count_pairs(mid)
+
+            is_possible = found_pairs >= p
 
             if is_possible:
                 r = mid
