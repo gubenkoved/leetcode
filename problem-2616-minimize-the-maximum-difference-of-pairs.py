@@ -16,7 +16,12 @@ class Solution:
             return result
 
         # solution is in (l; r]
-        l, r = -1, 10 ** 9
+        l = -1
+
+        if len(nums) > 1:
+            r = max(b - a for a, b in zip(nums, nums[1:]))
+        else:
+            r = 0
 
         while l < r - 1:
             mid = (l + r) // 2
