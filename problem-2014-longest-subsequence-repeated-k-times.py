@@ -1,4 +1,3 @@
-import collections
 import itertools
 
 
@@ -32,6 +31,9 @@ class Solution:
                     return False
                 next_idx_map = next_idxs[idx]
                 if c not in next_idx_map:
+                    return False
+                # optional cut-off check
+                if freqs[idx][c] < k:
                     return False
                 idx = next_idx_map[c] + 1  # go to next char
 
