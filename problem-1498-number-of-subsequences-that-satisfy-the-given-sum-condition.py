@@ -10,7 +10,7 @@ class Solution:
             if nums[i] > target:
                 continue
             # find j which contains sum for nums[i], nums[j] <= target
-            j = bisect.bisect_right(nums, target - nums[i])
+            j = bisect.bisect_right(nums, target - nums[i], lo=i)
             if j == i and nums[i] + nums[j] <= target:
                 result += 1
             elif j > i:
