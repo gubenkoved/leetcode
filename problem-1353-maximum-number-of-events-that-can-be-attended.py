@@ -14,6 +14,10 @@ class Solution:
         # min heap of available events (END, START)
         open = []
         while open_idx < n or open:
+            # optimization, fast forward to the next event
+            if not open and open_idx < n:
+                day = events[open_idx][0]
+
             # add available events (if any)
             while open_idx < n and events[open_idx][0] <= day:
                 heapq.heappush(open, (events[open_idx][1], events[open_idx][0]))
@@ -22,6 +26,7 @@ class Solution:
             # pick the one with earlies end date
             while open:
                 end_day, start_day = heapq.heappop(open)
+                # is the event still open?
                 if end_day < day:
                     continue
                 count += 1
