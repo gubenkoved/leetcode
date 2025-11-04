@@ -23,29 +23,43 @@ class Solution:
         n = len(unique)
         reachable = [0] * n
 
-        # TODO: optimize the calculation to avoid O(n^2)
+        left = 0
+        right = 0
+        inside_window = counts.get(unique[0], 0)
         for idx in range(n):
-            for idx2 in range(n):
-                if idx == idx2:
-                    continue
-                # skip phantoms
-                if unique[idx2] not in counts:
-                    continue
-                if abs(unique[idx] - unique[idx2]) <= k:
-                    reachable[idx] += counts[unique[idx2]]
+            # left pointer moves forward if the leftmost element is out of
+            # reach, right pointer also moves forward until the next advancement
+            # will either be out of array or out of reach; every time we update
+            # this window we update inside_window count
+
+            # left pointer handling
+            while unique[idx] - unique[left] > k:
+                inside_window -= counts[unique[left]]
+                left += 1
+
+            while right < n - 1 and unique[right + 1] - unique[idx] <= k:
+                # advance right forward
+                right += 1
+                inside_window += counts[unique[right]]
+
+            reachable[idx] = inside_window
 
         best = 0
 
         for idx in range(n):
-            cur = counts.get(unique[idx], 0) + min(numOperations, reachable[idx])
-            best = max(best, cur)
+            best = max(
+                best,
+                # NOTE: deducting self count from reachable as it includes it inside, but we need
+                # to treat it differently since it does not cost anything
+                counts.get(unique[idx], 0) + min(numOperations, reachable[idx] - counts.get(unique[idx], 0))
+            )
 
         return best
 
 
 if __name__ == "__main__":
     x = Solution()
-    print(x.maxFrequency([1, 4, 5], 1, 2))
-    print(x.maxFrequency([5, 11, 20, 20], 5, 1))
-    print(x.maxFrequency([5, 64], 42, 2))
-    print(x.maxFrequency([2, 20, 22, 22, 42, 42], 63, 5))
+    print(x.maxFrequency([1, 4, 5], 1, 2), 2)
+    print(x.maxFrequency([5, 11, 20, 20], 5, 1), 2)
+    print(x.maxFrequency([5, 64], 42, 2), 2)
+    print(x.maxFrequency([2, 20, 22, 22, 42, 42], 63, 5), 6)
