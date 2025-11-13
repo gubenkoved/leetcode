@@ -1,23 +1,26 @@
 from typing import List
+import bisect
+
+
+def smartass_lis_len(seq: List[int]) -> int:
+    tails = [float('-inf')]
+
+    for x in seq:
+        idx = bisect.bisect_left(tails, x)
+        if idx == len(tails):
+            tails.append(x)
+        else:
+            tails[idx] = x
+
+    return len(tails) - 1
+
 
 class Solution:
     def maxEnvelopes(self, envelopes: List[List[int]]) -> int:
-        # sort by 0 dimension increasing (use 1st dimension to break the tie)
-        envelopes.sort(key=lambda x: (x[0], x[1]))
-
-        n = len(envelopes)
-        result = [0] * n
-
-        for idx in range(n):
-            w, h = envelopes[idx]
-            cur = 0
-            for idx2 in range(idx):
-                w2, h2 = envelopes[idx2]
-                if w > w2 and h > h2:
-                    cur = max(cur, 1 + result[idx2])
-            result[idx] = cur
-
-        return max(result) + 1
+        # sort by second dimension descending so that in width is the same
+        # we do not consider this a fit for LIS below
+        envelopes.sort(key=lambda x: (x[0], -x[1]))
+        return smartass_lis_len([h for _, h in envelopes])
 
 
 if __name__ == '__main__':
