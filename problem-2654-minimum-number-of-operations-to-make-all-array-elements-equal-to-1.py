@@ -1,27 +1,22 @@
 from typing import List
-
-
-def gcd(a: int, b: int) -> int:
-    if b == 0:
-        return a
-    return gcd(b, a % b)
-
-
-def gcd_n(nums: List[int]) -> int:
-    if len(nums) == 2:
-        return gcd(nums[0], nums[1])
-    return gcd(nums[0], gcd_n(nums[1:]))
+from math import gcd
 
 
 class Solution:
     def minOperations(self, nums: List[int]) -> int:
         n = len(nums)
+
+        ones_count = sum(1 for x in nums if x == 1)
+
+        if ones_count > 0:
+            return n - ones_count
+
         m = None
 
         # finding the smallest subarray which would give 1 GCD (O(n^2))
         for i in range(0, n - 1):
             for j in range(i + 1, n):
-                if gcd_n(nums[i:j+1]) == 1:
+                if gcd(*nums[i:j+1]) == 1:
                     if m is None or j - i < m:
                         m = j - i
 
@@ -34,10 +29,8 @@ class Solution:
         # we will end up with at least one "1", which would leave us to just step
         # by step turn any neighbor to one (there will be N minus 1) these
         # where N is amount of non-1 numbers;
-        # if fact if there is at least one "1" we can skip gcd subarray
-        # altogether and just count amount of non "1"
 
-        return sum(1 for x in nums if x != 1) + m - 1
+        return n + m - 1
 
 
 if __name__ == '__main__':
