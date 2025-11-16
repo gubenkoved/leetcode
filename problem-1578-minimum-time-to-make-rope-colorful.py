@@ -1,23 +1,29 @@
 from typing import List
-import heapq
 
 
 class Solution:
     def minCost(self, colors: str, neededTime: List[int]) -> int:
-        heap = []
         group_sum = 0
+        group_max_time = 0
+        group_count = 0
         result = 0
-        colors += '0'  # simpler handling for the finish
-        neededTime.append(0)
+
         for idx in range(len(colors)):
             color = colors[idx]
             if idx > 0 and color != colors[idx - 1]:
-                if len(heap) > 1:
-                    result += group_sum + heapq.heappop(heap)
-                heap = []
+                if group_count > 1:
+                    result += group_sum - group_max_time
+                group_count = 0
                 group_sum = 0
-            heapq.heappush(heap, -neededTime[idx])
+                group_max_time = 0
+            group_max_time = max(group_max_time, neededTime[idx])
             group_sum += neededTime[idx]
+            group_count += 1
+
+        # handle final
+        if group_count > 1:
+            result += group_sum - group_max_time
+
         return result
 
 
