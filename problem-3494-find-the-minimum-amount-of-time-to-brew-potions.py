@@ -17,15 +17,8 @@ class Solution:
         # working on the potion, as we HAVE TO process immediately after each
         # magician is done with the potion
 
-        # handle the first potion as a base case
-        t = 0
-        for magician in range(magicians_count):
-            time_needed = skill[magician] * mana[0]
-            t += time_needed
-            freed_time[magician] = t
-
         # handle all the other potions
-        for potion in range(1, potions_count):
+        for potion in range(potions_count):
             # backward pass
             start_time = freed_time[-1]
             for magician in range(magicians_count - 2, -1, -1):
