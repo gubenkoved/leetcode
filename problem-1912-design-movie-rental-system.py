@@ -4,6 +4,7 @@ import heapq
 
 # for now it only supports unique values (no duplicates present in the heap each moment),
 # but can be further enhanced via tracking removed with counts map
+# better alternative -- tree set (which does not exist in Python) or SortedList from sortedcontainers
 class SmarterHeap:
     def __init__(self):
         self.heap = []
@@ -55,26 +56,15 @@ class MovieRentingSystem:
 
         self.n = n
 
-        # NOTE: we can not efficiently drop from heap, so it will have stale
-        # entries, consult with set inside shop_to_available_movies map!
-        self.movie_to_availability_heap: dict[int, list] = {}
-        self.shop_to_available_movies: dict[int, set] = {}
+        self.movie_to_availability_heap: dict[int, SmarterHeap] = {}
 
         # IMMUTABLE: (shop, movie) -> price map
         self.prices_map: dict[tuple[int, int], int] = {}
 
         for shop, movie, price in entries:
             if movie not in self.movie_to_availability_heap:
-                self.movie_to_availability_heap[movie] = []
-
-            if shop not in self.shop_to_available_movies:
-                self.shop_to_available_movies[shop] = set()
-
-            heap = self.movie_to_availability_heap[movie]
-            heapq.heappush(heap, (price, shop))
-
-            self.shop_to_available_movies[shop].add(movie)
-
+                self.movie_to_availability_heap[movie] = SmarterHeap()
+            self.movie_to_availability_heap[movie].push((price, shop))
             self.prices_map[(shop, movie)] = price
 
         # min heap of (price, shop, movie)
@@ -82,48 +72,18 @@ class MovieRentingSystem:
 
     # top5 the cheapest shops where given movie is available
     def search(self, movie: int) -> List[int]:
-        heap = self.movie_to_availability_heap.get(movie, [])
-
-        # pop top 5
-        result = []
-        popped = set()
-
-        while heap and len(result) < 5:
-            (price, shop) = heapq.heappop(heap)
-
-            # filter out if movie is no longer available
-            # (we do not need to put it back into heap)
-            if movie not in self.shop_to_available_movies[shop]:
-                continue
-
-            # it is also possible we will have multiple records for the same
-            # shop in the heap, we need to drop these too
-            if (price, shop) in popped:
-                continue
-
-            popped.add((price, shop))
-            result.append(shop)
-
-        # put the top5 back!
-        for item in popped:
-            heapq.heappush(heap, item)
-
-        return result
+        if movie not in self.movie_to_availability_heap:
+            return []
+        return [shop for (price, shop) in self.movie_to_availability_heap[movie].top_k(5)]
 
     def rent(self, shop: int, movie: int) -> None:
-        self.shop_to_available_movies[shop].discard(movie)
-
         price = self.prices_map[(shop, movie)]
-
+        self.movie_to_availability_heap[movie].delete((price, shop))
         self.rental_heap.push((price, shop, movie))
 
     def drop(self, shop: int, movie: int) -> None:
-        heap = self.movie_to_availability_heap[movie]
         price = self.prices_map[(shop, movie)]
-        heapq.heappush(heap, (price, shop))
-
-        self.shop_to_available_movies[shop].add(movie)
-
+        self.movie_to_availability_heap[movie].push((price, shop))
         self.rental_heap.delete((price, shop, movie))
 
     # top5 the cheapest rented
