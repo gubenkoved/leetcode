@@ -2,8 +2,43 @@ from typing import List
 import heapq
 
 
-# TODO: extract SmarterHeap that will support marking elements removed
-#  with elimination on traversal, also it will support topN1
+# for now it only supports unique values (no duplicates present in the heap each moment),
+# but can be further enhanced via tracking removed with counts map
+class SmarterHeap:
+    def __init__(self):
+        self.heap = []
+        self.set = set()
+
+    def push(self, value):
+        assert value not in self.set
+        heapq.heappush(self.heap, value)
+        self.set.add(value)
+
+    def delete(self, value):
+        assert value in self.set
+        self.set.discard(value)
+
+    def top_k(self, k):
+        result = []
+        result_set = set()  # so that we can drop duplicates!
+
+        while self.heap and len(result) < k:
+            element = heapq.heappop(self.heap)
+
+            if element not in self.set:
+                continue
+
+            if element in result_set:
+                continue
+
+            result_set.add(element)
+            result.append(element)
+
+        # put values back
+        for element in result:
+            heapq.heappush(self.heap, element)
+
+        return result
 
 
 class MovieRentingSystem:
@@ -43,11 +78,7 @@ class MovieRentingSystem:
             self.prices_map[(shop, movie)] = price
 
         # min heap of (price, shop, movie)
-        # same: consult with rental set as this heap will contain stale entries
-        self.rental_heap = []
-
-        # tracks rented (shop, movie) pairs (always up to date)
-        self.rental_set = set()
+        self.rental_heap = SmarterHeap()
 
     # top5 the cheapest shops where given movie is available
     def search(self, movie: int) -> List[int]:
@@ -83,11 +114,8 @@ class MovieRentingSystem:
         self.shop_to_available_movies[shop].discard(movie)
 
         price = self.prices_map[(shop, movie)]
-        heapq.heappush(self.rental_heap, (price, shop, movie))
 
-        self.rental_set.add(
-            (shop, movie)
-        )
+        self.rental_heap.push((price, shop, movie))
 
     def drop(self, shop: int, movie: int) -> None:
         heap = self.movie_to_availability_heap[movie]
@@ -96,33 +124,11 @@ class MovieRentingSystem:
 
         self.shop_to_available_movies[shop].add(movie)
 
-        self.rental_set.discard((shop, movie))
+        self.rental_heap.delete((price, shop, movie))
 
     # top5 the cheapest rented
     def report(self) -> List[List[int]]:
-
-        result = []
-        popped = set()
-
-        while self.rental_heap and len(result) < 5:
-            price, shop, movie = heapq.heappop(self.rental_heap)
-
-            # no longer rented, skip!
-            if (shop, movie) not in self.rental_set:
-                continue
-
-            # drop duplicates
-            if (price, shop, movie) in popped:
-                continue
-
-            popped.add((price, shop, movie))
-            result.append([shop, movie])
-
-        # put the things back!
-        for element in popped:
-            heapq.heappush(self.rental_heap, element)
-
-        return result
+        return [[shop, movie] for (price, shop, movie) in self.rental_heap.top_k(5)]
 
 # Your MovieRentingSystem object will be instantiated and called as such:
 # obj = MovieRentingSystem(n, entries)
