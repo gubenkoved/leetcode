@@ -1,4 +1,5 @@
 from typing import List
+from sortedcontainers import SortedList
 
 
 def in_range(start, end, num):
@@ -7,11 +8,11 @@ def in_range(start, end, num):
 
 class Solution:
     def intersectionSizeTwo(self, intervals: List[List[int]]) -> int:
-        nums = set()
+        nums = SortedList()
         intervals.sort(key=lambda interval: interval[1])
 
         for start, end in intervals:
-            count = sum(1 for x in nums if in_range(start, end, x))
+            count = sum(1 for x in nums[-2:] if in_range(start, end, x))
 
             if count < 2:
                 needed = 2 - count
