@@ -5,41 +5,56 @@ import (
 )
 
 func minScoreTriangulation(values []int) int {
-	if len(values) < 3 {
-		panic("At least 3 vertices needed")
-	}
 
-	if len(values) == 3 {
-		return values[0] * values[1] * values[2]
-	}
+	cache := make(map[[2]int]int)
 
-	best := -1
-	n := len(values)
+	// solves the original problem for polygon with indexes from original
+	// values array starting at i and till j inclusive
+	var solve func(i, j int) int
 
-	// given each edge is part of SOME triangle, we take edge with verticies
-	// at 0 and 1 and enumerate all possible positions
-	for m := 2; m < n; m++ {
-		cur_triangle := []int{values[0], values[1], values[m]}
-		cur := minScoreTriangulation(cur_triangle)
-
-		left := values[1 : m+1]
-		if len(left) >= 3 {
-			cur += minScoreTriangulation(left)
+	solve = func(i, j int) int {
+		cache_key := [2]int{i, j}
+		if res, ok := cache[cache_key]; ok {
+			return res
 		}
 
-		right := append(append([]int{}, values[m:]...), values[0])
-		if len(right) >= 3 {
-			cur += minScoreTriangulation(right)
+		if j-i <= 1 {
+			panic("at least 3 vertices needed")
 		}
 
-		if best != -1 {
-			best = min(best, cur)
+		result := -1
+		if j-i == 2 {
+			result = values[i] * values[i+1] * values[i+2]
 		} else {
-			best = cur
+			// verticies at i and j are included, iterate the position of third one
+			result = 0
+			for m := i + 1; m < j; m++ {
+				cur := values[i] * values[m] * values[j]
+
+				// left poly
+				if m-i >= 2 {
+					cur += solve(i, m)
+				}
+
+				// right poly
+				if j-m >= 2 {
+					cur += solve(m, j)
+				}
+
+				if result == 0 {
+					result = cur
+				} else {
+					result = min(result, cur)
+				}
+			}
 		}
+
+		cache[cache_key] = result
+
+		return result
 	}
 
-	return best
+	return solve(0, len(values)-1)
 }
 
 func main() {
