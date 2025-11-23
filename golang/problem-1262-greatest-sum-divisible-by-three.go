@@ -6,36 +6,31 @@ import (
 
 func maxSumDivThree(nums []int) int {
 	n := len(nums)
-	var dp [][]int
 
-	for i := 0; i < n; i++ {
-		dp = append(dp, make([]int, 3))
-	}
+	// since we only interested in result for previous step
+	// we can store only the last column for our DP array
 
-	for i := 0; i < n; i++ {
-		num := nums[i]
-		reminder := num % 3
-		if i == 0 {
-			// first edge case
-			dp[0][reminder] = num
-		} else {
-			// base case -> carry over previous
-			for j := 0; j < 3; j++ {
-				dp[i][j] = dp[i-1][j]
-			}
-			for j := 0; j < 3; j++ {
-				new_sum := dp[i-1][j] + num
-				new_rem := new_sum % 3
-				if new_sum > dp[i][new_rem] {
-					dp[i][new_rem] = new_sum
-				}
+	var dp [3]int
+
+	dp[nums[0]%3] = nums[0]
+
+	for i := 1; i < n; i++ {
+		next_dp := dp
+
+		for j := 0; j < 3; j++ {
+			new_sum := dp[j] + nums[i]
+			new_rem := new_sum % 3
+			if new_sum > next_dp[new_rem] {
+				next_dp[new_rem] = new_sum
 			}
 		}
+
+		dp = next_dp
 	}
 
-	fmt.Println(dp)
+	// fmt.Println(dp)
 
-	return dp[n-1][0]
+	return dp[0]
 }
 
 func main() {
