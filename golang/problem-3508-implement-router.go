@@ -45,9 +45,20 @@ func (cb *CircularBuffer[T]) AddElement(element T) (T, bool) {
 		return evicted, is_evicted
 	} else {
 		if cb.producerIdx-cb.consumerIdx == len(cb.buffer) {
-			// need to grow buffer
+			// need to grow buffer, we also need to reallocate the pointers, so
+			// that we do not introduce holes
 			new_buffer := make([]T, len(cb.buffer)*2)
-			copy(new_buffer, cb.buffer)
+
+			// move the elements so that consumption starts at 0
+			for idx := cb.consumerIdx; idx < cb.producerIdx; idx++ {
+				new_buffer[idx-cb.consumerIdx] = cb.buffer[idx%len(cb.buffer)]
+			}
+
+			// first unconsumed element will be at 0 position now!
+			cb.producerIdx = cb.producerIdx - cb.consumerIdx
+			cb.consumerIdx = 0
+
+			// update the buffer
 			cb.buffer = new_buffer
 		}
 
@@ -135,6 +146,7 @@ func (this *Router) AddPacket(source int, destination int, timestamp int) bool {
 
 	if is_evicted {
 		this.perDestinationBuffers[evicted.destination].PopElement()
+		delete(this.detector, evicted)
 	}
 
 	return true
