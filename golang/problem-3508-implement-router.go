@@ -5,6 +5,68 @@ import (
 	"sort"
 )
 
+// dynamic circular buffer that can grow like a dynamic array exponentially so that
+// amortized complexity is still low
+type CircularBuffer[T any] struct {
+	buffer      []T
+	consumerIdx int
+	producerIdx int
+	isFixedSize bool
+}
+
+func CreateCircularBuffer[T any](size int, isFixedSize bool) *CircularBuffer[T] {
+	return &CircularBuffer[T]{
+		buffer:      make([]T, size),
+		consumerIdx: 0,
+		producerIdx: 0,
+		isFixedSize: isFixedSize,
+	}
+}
+
+func (cb *CircularBuffer[T]) AddElement(element T) {
+	if cb.isFixedSize {
+		cb.buffer[cb.producerIdx%len(cb.buffer)] = element
+		cb.producerIdx += 1
+
+		// buffer overflow tracking
+		if cb.producerIdx-cb.consumerIdx > len(cb.buffer) {
+			cb.consumerIdx += 1
+		}
+	} else {
+		// TODO: grow the buffer if needed
+	}
+}
+
+// TODO: need to shrink if fill factor goes below given value (like 10%) for
+// dynamically sized case
+func (cb *CircularBuffer[T]) PopElement() T {
+	if cb.consumerIdx == cb.producerIdx {
+		panic("nothing more to consume")
+	}
+
+	element := cb.buffer[cb.consumerIdx%len(cb.buffer)]
+	cb.consumerIdx += 1
+	return element
+}
+
+func (cb *CircularBuffer[T]) CountElements() int {
+	return cb.producerIdx - cb.consumerIdx
+}
+
+// assuming sorted order in the buffer returns the first index of element
+// which turns the function f to true
+func (cb *CircularBuffer[T]) SearchIndexOf(f func(T) bool) int {
+	offset := sort.Search(cb.producerIdx-cb.consumerIdx, func(offset int) bool {
+		idx := (cb.consumerIdx + offset) % len(cb.buffer)
+		return f(cb.buffer[idx])
+	})
+	return cb.consumerIdx + offset
+}
+
+func (cb *CircularBuffer[T]) At(idx int) T {
+	return cb.buffer[idx%len(cb.buffer)]
+}
+
 type Packet struct {
 	source      int
 	destination int
@@ -12,19 +74,14 @@ type Packet struct {
 }
 
 type Router struct {
-	// circular buffer of packets
-	buffer      []Packet
-	consumerIdx int
-	producerIdx int
-	detector    map[Packet]bool
+	buffer   *CircularBuffer[Packet]
+	detector map[Packet]bool
 }
 
 func Constructor(memoryLimit int) Router {
 	return Router{
-		buffer:      make([]Packet, memoryLimit),
-		consumerIdx: 0,
-		producerIdx: 0,
-		detector:    make(map[Packet]bool),
+		buffer:   CreateCircularBuffer[Packet](memoryLimit, true),
+		detector: make(map[Packet]bool),
 	}
 }
 
@@ -41,23 +98,17 @@ func (this *Router) AddPacket(source int, destination int, timestamp int) bool {
 
 	// add a new packet
 	this.detector[packet] = true
-	this.buffer[this.producerIdx%len(this.buffer)] = packet
-	this.producerIdx += 1
-
-	// buffer overflow tracking
-	if this.producerIdx-this.consumerIdx > len(this.buffer) {
-		this.consumerIdx += 1
-	}
+	this.buffer.AddElement(packet)
 
 	return true
 }
 
 func (this *Router) ForwardPacket() []int {
-	if this.consumerIdx == this.producerIdx {
+	if this.buffer.CountElements() == 0 {
 		return []int{}
 	}
-	packet := this.buffer[this.consumerIdx%len(this.buffer)]
-	this.consumerIdx += 1
+
+	packet := this.buffer.PopElement()
 
 	// drop from detector
 	delete(this.detector, packet)
@@ -75,19 +126,17 @@ func (this *Router) GetCount(destination int, startTime int, endTime int) int {
 	// note: left index we search as first element with timestamp >= startTime
 	// but last indexes we need the first index which timestamp >= endTime + 1
 	// so that we calculate all the occurrences of the endTime
-	start_offset := sort.Search(this.producerIdx-this.consumerIdx, func(offset int) bool {
-		idx := (this.consumerIdx + offset) % len(this.buffer)
-		return this.buffer[idx].timestamp >= startTime
+	start_idx := this.buffer.SearchIndexOf(func(packet Packet) bool {
+		return packet.timestamp >= startTime
 	})
-	end_offset := sort.Search(this.producerIdx-this.consumerIdx, func(offset int) bool {
-		idx := (this.consumerIdx + offset) % len(this.buffer)
-		return this.buffer[idx].timestamp >= endTime+1
+	end_idx := this.buffer.SearchIndexOf(func(packet Packet) bool {
+		return packet.timestamp >= endTime+1
 	})
 
 	// filter per destination now?
 	count := 0
-	for offset := start_offset; offset < end_offset; offset++ {
-		packet := this.buffer[(this.consumerIdx+offset)%len(this.buffer)]
+	for idx := start_idx; idx < end_idx; idx++ {
+		packet := this.buffer.At(idx)
 		if packet.destination == destination {
 			count += 1
 		}
