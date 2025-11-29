@@ -1,3 +1,7 @@
+//go:build ignore
+
+package main
+
 func minimumOperations(nums []int) int {
 	result := 0
 

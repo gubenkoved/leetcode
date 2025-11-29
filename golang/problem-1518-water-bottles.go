@@ -1,3 +1,7 @@
+//go:build ignore
+
+package main
+
 func numWaterBottles(numBottles int, numExchange int) int {
 	result := 0
 	full := numBottles
