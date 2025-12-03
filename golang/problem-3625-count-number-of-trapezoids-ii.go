@@ -104,33 +104,35 @@ func roundFloat(x float64, prec int) float64 {
 	return math.Round(x*fact) / fact
 }
 
-func zeroAreaCount(bucketLines []line) int {
-	line := bucketLines[0]
+func zeroAreaCount(bucketLines []line) (int, int) {
+	firstLine := bucketLines[0]
 	direction := vector{
-		float64(line[1][0] - line[0][0]),
-		float64(line[1][1] - line[0][1]),
+		float64(firstLine[1][0] - firstLine[0][0]),
+		float64(firstLine[1][1] - firstLine[0][1]),
 	}
 	direction = toUnitVector(direction)
 
-	subgroupsCounts := map[float64]int{}
-	for _, line := range bucketLines {
-		dist := distance(line[0], direction)
-		dist = roundFloat(dist, 3)
-		subgroupsCounts[dist] += 1
+	subgroups := map[float64][]line{}
+	for _, line2 := range bucketLines {
+		dist := distance(line2[0], direction)
+		dist = roundFloat(dist, 6)
+		subgroups[dist] = append(subgroups[dist], line2)
 	}
 
 	result := 0
-	for _, v := range subgroupsCounts {
-		result += comb2(v)
+	zeroAreaParallelograms := 0
+	for _, groupLines := range subgroups {
+		result += comb2(len(groupLines))
+		zeroAreaParallelograms += parallelogramCount(groupLines)
 	}
 
-	return result
+	return result, zeroAreaParallelograms
 }
 
-func parallelogramCount(bucketLines []line) int {
+func parallelogramCount(lines []line) int {
 	byLenCount := map[float64]int{}
 
-	for _, line := range bucketLines {
+	for _, line := range lines {
 		vec := vector{
 			float64(line[1][0] - line[0][0]),
 			float64(line[1][1] - line[0][1]),
@@ -184,11 +186,9 @@ func countTrapezoids(points [][]int) int {
 
 	result := 0
 	pCount := 0
+	zeroPCount := 0
+	zeroCount := 0
 
-	// TODO: we now undercount -- we subtracted parallelograms of zero area as
-	//  well: either do not consider these parallelograms (preferrable) OR
-	//  find a way to count zero area "parallelograms" and add them back to avoid
-	//  double subtraction for them
 	for _, edges := range buckets {
 		// inside each bucket of the same slope we should pick a pair of
 		// edges which we can do C(2, k) different ways
@@ -196,17 +196,21 @@ func countTrapezoids(points [][]int) int {
 
 		// subtract for cases where we ended up counting zero area ones
 		// (both sides on the same line)
-		result -= zeroAreaCount(edges)
+		zeroAreaCount, zeroAreaParallelogramsCount := zeroAreaCount(edges)
+
+		// subtract trapeziods of zero area (INCLUDING parallelograms)
+		zeroCount += zeroAreaCount
+
+		zeroPCount += zeroAreaParallelogramsCount
 
 		// count parallelograms which will be overcounted due to 2 directions
-		// being present
+		// being present (INCLUDES ZERO area parallelograms)
 		pCount += parallelogramCount(edges)
 	}
 
-	// pCount itself is double counted!
-	pCount /= 2
+	// parallelograms will be double counted (excluding ones which had zero area)
 
-	return result - pCount
+	return result - (pCount-zeroPCount)/2 - zeroCount
 }
 
 func main() {
@@ -222,7 +226,12 @@ func main() {
 	// fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 3}, {0, 7}, {1, 113}, {1, 127}, {1, 139}}), 9)
 
 	// single parallelogram
-	fmt.Println(countTrapezoids([][]int{{0, 0}, {1, 0}, {1, 1}, {2, 1}}), 1)
+	// fmt.Println(countTrapezoids([][]int{{0, 0}, {1, 0}, {1, 1}, {2, 1}}), 1)
 
-	fmt.Println(countTrapezoids([][]int{{71, -89}, {-75, -89}, {-9, 11}, {-24, -89}, {-51, -89}, {-77, -89}, {42, 11}}), 10)
+	// fmt.Println(countTrapezoids([][]int{{71, -89}, {-75, -89}, {-9, 11}, {-24, -89}, {-51, -89}, {-77, -89}, {42, 11}}), 10)
+
+	// fmt.Println(countTrapezoids([][]int{{84, 88}, {-86, 14}, {-1, 88}, {-86, -67}, {-86, 88}}), 0)
+
+	// fmt.Println(countTrapezoids([][]int{{-37, -12}, {86, 21}, {-99, 59}, {-69, -70}, {-69, 23}, {43, -12}, {-37, 12}, {-69, 12}, {-69, 9}, {-69, -91}, {-99, 12}, {-37, 40}, {-83, 59}}), 50)
+	fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 2}, {0, 3}}), 0)
 }
