@@ -127,6 +127,23 @@ func zeroAreaCount(bucketLines []line) int {
 	return result
 }
 
+func parallelogramCount(bucketLines []line) int {
+	byLenCount := map[float64]int{}
+
+	for _, line := range bucketLines {
+		vec := vector{
+			float64(line[1][0] - line[0][0]),
+			float64(line[1][1] - line[0][1]),
+		}
+		byLenCount[length(vec)] += 1
+	}
+	result := 0
+	for _, count := range byLenCount {
+		result += comb2(count)
+	}
+	return result
+}
+
 func countTrapezoids(points [][]int) int {
 	n := len(points)
 
@@ -166,9 +183,12 @@ func countTrapezoids(points [][]int) int {
 	}
 
 	result := 0
+	pCount := 0
 
-	// TODO: find and subtract parallelograms since they are counted twice
-	// in two different directions
+	// TODO: we now undercount -- we subtracted parallelograms of zero area as
+	//  well: either do not consider these parallelograms (preferrable) OR
+	//  find a way to count zero area "parallelograms" and add them back to avoid
+	//  double subtraction for them
 	for _, edges := range buckets {
 		// inside each bucket of the same slope we should pick a pair of
 		// edges which we can do C(2, k) different ways
@@ -177,20 +197,32 @@ func countTrapezoids(points [][]int) int {
 		// subtract for cases where we ended up counting zero area ones
 		// (both sides on the same line)
 		result -= zeroAreaCount(edges)
+
+		// count parallelograms which will be overcounted due to 2 directions
+		// being present
+		pCount += parallelogramCount(edges)
 	}
 
-	return result
+	// pCount itself is double counted!
+	pCount /= 2
+
+	return result - pCount
 }
 
 func main() {
 	// fmt.Println(countTrapezoids([][]int{{-1, -1}, {1, 1}, {-1, 1}, {1, -1}, {0, 0}}))
 
-	fmt.Println(countTrapezoids([][]int{{-3, 2}, {3, 0}, {2, 3}, {3, 2}, {2, -3}}), 2)
-	fmt.Println(countTrapezoids([][]int{{0, 0}, {1, 0}, {0, 1}, {2, 1}}), 1)
+	// fmt.Println(countTrapezoids([][]int{{-3, 2}, {3, 0}, {2, 3}, {3, 2}, {2, -3}}), 2)
+	// fmt.Println(countTrapezoids([][]int{{0, 0}, {1, 0}, {0, 1}, {2, 1}}), 1)
 
-	fmt.Println(countTrapezoids([][]int{{0, 10}, {0, 20}, {0, 30}, {2, 40}}), 0)
+	// fmt.Println(countTrapezoids([][]int{{0, 10}, {0, 20}, {0, 30}, {2, 40}}), 0)
 
-	fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 2}, {0, 3}, {0, 4}}), 0)
+	// fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 2}, {0, 3}, {0, 4}}), 0)
 
-	fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 3}, {0, 7}, {1, 113}, {1, 127}, {1, 139}}), "i think 9")
+	// fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 3}, {0, 7}, {1, 113}, {1, 127}, {1, 139}}), 9)
+
+	// single parallelogram
+	fmt.Println(countTrapezoids([][]int{{0, 0}, {1, 0}, {1, 1}, {2, 1}}), 1)
+
+	fmt.Println(countTrapezoids([][]int{{71, -89}, {-75, -89}, {-9, 11}, {-24, -89}, {-51, -89}, {-77, -89}, {42, 11}}), 10)
 }
