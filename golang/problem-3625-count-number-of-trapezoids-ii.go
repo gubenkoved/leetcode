@@ -59,10 +59,10 @@ func vectorDotProduct(v1 vector, v2 vector) float64 {
 	return v1[0]*v2[0] + v1[1]*v2[1]
 }
 
-func vectorProduct(v vector, fact float64) vector {
+func vectorProduct(v vector, factor float64) vector {
 	return vector{
-		float64(v[0] * fact),
-		float64(v[1] * fact),
+		v[0] * factor,
+		v[1] * factor,
 	}
 }
 
@@ -75,18 +75,18 @@ func vectorSubtract(v1 vector, v2 vector) vector {
 }
 
 func toUnitVector(vec vector) vector {
-	d := length(vec)
+	return vectorProduct(vec, 1/length(vec))
+}
+
+func pointAsVector(p point) vector {
 	return vector{
-		vec[0] / d,
-		vec[1] / d,
+		float64(p[0]),
+		float64(p[1]),
 	}
 }
 
 func distance(point point, vec vector) float64 {
-	pointVectorInv := vector{
-		float64(-point[0]),
-		float64(-point[1]),
-	}
+	pointVectorInv := vectorProduct(pointAsVector(point), -1)
 	return length(
 		vectorSubtract(
 			pointVectorInv,
@@ -104,24 +104,17 @@ func cross(u, v vector) float64 {
 
 func zeroAreaCount(bucketLines []line) (int, int) {
 	firstLine := bucketLines[0]
-	direction := vector{
-		float64(firstLine[1][0] - firstLine[0][0]),
-		float64(firstLine[1][1] - firstLine[0][1]),
-	}
+	direction := vectorSubtract(pointAsVector(firstLine[1]), pointAsVector(firstLine[0]))
 	direction = toUnitVector(direction)
 
 	subgroups := map[float64][]line{}
 	for _, line2 := range bucketLines {
-		cp := cross(direction, vector{
-			float64(line2[0][0]),
-			float64(line2[0][1]),
-		})
-
+		cross_prod := cross(direction, pointAsVector(line2[0]))
 		dist := distance(line2[0], direction)
 
 		// we need to consider the side point are on as it could be exactly
 		// same distance, BUT on the other side!
-		if cp < 0 {
+		if cross_prod < 0 {
 			dist *= -1
 		}
 
@@ -143,10 +136,7 @@ func parallelogramCount(lines []line) int {
 	byLenCount := map[float64]int{}
 
 	for _, line := range lines {
-		vec := vector{
-			float64(line[1][0] - line[0][0]),
-			float64(line[1][1] - line[0][1]),
-		}
+		vec := vectorSubtract(pointAsVector(line[1]), pointAsVector(line[0]))
 		byLenCount[length(vec)] += 1
 	}
 	result := 0
