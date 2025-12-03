@@ -37,18 +37,12 @@ func normalize(dx, dy int) vector {
 	}
 }
 
-// edge will be defined as pair of points by their indexes in the original
-// slice
 type vector [2]float64
 type point [2]int
 type line [2]point
 
 func comb2(x int) int {
 	return x * (x - 1) / 2
-}
-
-func orthogonal(v vector) vector {
-	return vector{v[1], v[0]}
 }
 
 func lengthSquared(v vector) float64 {
@@ -104,6 +98,10 @@ func roundFloat(x float64, prec int) float64 {
 	return math.Round(x*fact) / fact
 }
 
+func cross(u, v vector) float64 {
+	return u[0]*v[1] - u[1]*v[0]
+}
+
 func zeroAreaCount(bucketLines []line) (int, int) {
 	firstLine := bucketLines[0]
 	direction := vector{
@@ -114,7 +112,19 @@ func zeroAreaCount(bucketLines []line) (int, int) {
 
 	subgroups := map[float64][]line{}
 	for _, line2 := range bucketLines {
+		cp := cross(direction, vector{
+			float64(line2[0][0]),
+			float64(line2[0][1]),
+		})
+
 		dist := distance(line2[0], direction)
+
+		// we need to consider the side point are on as it could be exactly
+		// same distance, BUT on the other side!
+		if cp < 0 {
+			dist *= -1
+		}
+
 		dist = roundFloat(dist, 6)
 		subgroups[dist] = append(subgroups[dist], line2)
 	}
@@ -206,6 +216,8 @@ func countTrapezoids(points [][]int) int {
 		// count parallelograms which will be overcounted due to 2 directions
 		// being present (INCLUDES ZERO area parallelograms)
 		pCount += parallelogramCount(edges)
+
+		// fmt.Println("key", key, "zero count", zeroAreaCount)
 	}
 
 	// parallelograms will be double counted (excluding ones which had zero area)
@@ -232,6 +244,8 @@ func main() {
 
 	// fmt.Println(countTrapezoids([][]int{{84, 88}, {-86, 14}, {-1, 88}, {-86, -67}, {-86, 88}}), 0)
 
-	// fmt.Println(countTrapezoids([][]int{{-37, -12}, {86, 21}, {-99, 59}, {-69, -70}, {-69, 23}, {43, -12}, {-37, 12}, {-69, 12}, {-69, 9}, {-69, -91}, {-99, 12}, {-37, 40}, {-83, 59}}), 50)
-	fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 2}, {0, 3}}), 0)
+	fmt.Println(countTrapezoids([][]int{{-37, -12}, {86, 21}, {-99, 59}, {-69, -70}, {-69, 23}, {43, -12}, {-37, 12}, {-69, 12}, {-69, 9}, {-69, -91}, {-99, 12}, {-37, 40}, {-83, 59}}), 50)
+	// fmt.Println(countTrapezoids([][]int{{0, 1}, {0, 2}, {0, 3}}), 0)
+
+	// fmt.Println(countTrapezoids([][]int{{-1, 1}, {1, 1}, {-1, -1}, {1, -1}}), 1)
 }
