@@ -14,9 +14,21 @@ func countPartitions(nums []int, k int) int {
 	// 2^n
 	// we can solve sub problem which is count starting at given index
 	// def f(startIdx: int) -> int
-	//   # for each prefix that still fullfils the condition
+	//   # for each prefix that still fulfils the condition
 	//   # add f(idx) to the result
-	// Would not this be O(n^2) though?
+	// Would not this be O(n^2) though in the worst case where K is quite big
+	// and we can include whole array into the single partition? Yes it would
+	// [1, 2, 3, 4, 5, 6, 7, 8, 9], k = 9
+	// [1] [...]
+	// [1, 2] [...]
+	// [1, 2, 3] [...]
+	// [1, 2, 3, 4] [...]
+	// we have O(n) operations, and every time we will call calculation recursively
+	// we will spend O(n) time and we will need to call it n times as well...
+	// aha...
+	// so we just need to be able to calculate range sum over the f(x)
+	// because if we have a range [x y z] [...]
+	// then its values, say for x is a range sum for f(x) from y to z+1!
 
 	n := len(nums)
 
