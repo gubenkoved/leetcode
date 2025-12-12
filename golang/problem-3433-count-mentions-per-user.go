@@ -16,15 +16,17 @@ func parseInt(s string) int {
 }
 
 func countMentions(numberOfUsers int, events [][]string) []int {
-	maxT := 100100
-	hereMentions := make([]int, maxT)
+	hereMentions := map[int]int{}
 	goesOfflineTimes := make([][]int, numberOfUsers)
 
 	allMentionsCount := 0
 	specificMentionsMap := map[int]int{}
 
+	maxT := 0
+
 	for _, event := range events {
 		t := parseInt(event[1])
+		maxT = max(maxT, t)
 		if event[0] == "MESSAGE" {
 			ms := event[2]
 			if ms == "ALL" {
@@ -43,6 +45,8 @@ func countMentions(numberOfUsers int, events [][]string) []int {
 			goesOfflineTimes[uid] = append(goesOfflineTimes[uid], t)
 		}
 	}
+
+	maxT += 100
 
 	hereMentionsPrefixSum := make([]int, maxT)
 	for idx := 0; idx < len(hereMentionsPrefixSum); idx++ {
