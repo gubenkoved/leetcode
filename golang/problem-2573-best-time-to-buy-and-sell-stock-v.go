@@ -2,48 +2,93 @@
 
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func maximumProfit(prices []int, k int) int64 {
 	// looks like we can solve with 2D dynamic programming
 	// dp[d][t] which is max profit can be made on day "d" with up to "t" trades
 
-	D := len(prices)
+	var maxProfit func(d int, trades int, state int) int64
 
-	dp := make([][]int64, D+1)
-	for d := 0; d <= D; d++ {
-		dp[d] = make([]int64, k+1)
-	}
+	// states:
+	// 0 - not holding position
+	// 1 - holding long
+	// 2 - holding short
 
-	// TLE as this is O(k * D * D), D is up to 10^3, K is up to D/2
-	for dealNum := 1; dealNum <= k; dealNum++ {
-		// NOTE: dClose/dOpen are 1 based to make code a bit simpler when we
-		// accessing DP table
-		for dClose := 2; dClose <= D; dClose++ {
-			// can either bought earlier and sold on day "dClose" (long)
-			// OR sold earlier and bought on day "dClose" (short selling)
-			// this previous day would be denoted as dOpen
+	// maxProfit(d, trades, state) is max profit at day "d" while making
+	// "trades" trades either not holding position, holding long or holding short
+	// note that we will separately track "profit" from buying and selling stock
+	// not from the trade as a whole
 
-			bestProfit := dp[dClose-1][dealNum]
+	memo := map[[3]int]int64{}
 
-			for dOpen := 1; dOpen < dClose; dOpen++ {
-				// do nothing
-				bestProfit = max(bestProfit, dp[dOpen][dealNum-1])
+	maxProfit = func(d, trades, state int) int64 {
+		key := [3]int{d, trades, state}
 
-				// long
-				bestProfit = max(bestProfit, int64(prices[dClose-1]-prices[dOpen-1])+dp[dOpen-1][dealNum-1])
-
-				// short
-				bestProfit = max(bestProfit, int64(prices[dOpen-1]-prices[dClose-1])+dp[dOpen-1][dealNum-1])
-			}
-
-			dp[dClose][dealNum] = bestProfit
+		cached, ok := memo[key]
+		if ok {
+			return cached
 		}
+
+		var result int64
+
+		if trades == 0 {
+			return 0
+		}
+
+		p := int64(prices[d])
+
+		if d == 0 {
+			if state == 0 {
+				result = 0
+			} else if state == 1 {
+				// have to buy (will have to sell later)
+				result = -p
+			} else if state == 2 {
+				// short selling (will have to buy later)
+				result = +p
+			}
+		} else {
+			// did not do anything -- state is the same as previous day
+			result = maxProfit(d-1, trades, state)
+
+			// it is not obvious why we have to decrement trade count on entering
+			// the deal, not when exiting it, but otherwise there will be boundary
+			// issue when we land with 0 trades while needing to enter long/short
+
+			if state == 0 {
+				// either we did not do anything
+				// OR closing our long position
+				// OR closing our short position
+				result = max(
+					result,
+					maxProfit(d-1, trades, 1)+p, // closed long (selling)
+					maxProfit(d-1, trades, 2)-p, // closed short (buying)
+				)
+			} else if state == 1 {
+				// if state is 1 it means transfer from no position was made via buying
+				result = max(
+					result,
+					maxProfit(d-1, trades-1, 0)-p,
+				)
+			} else if state == 2 {
+				// did not hold position, but selling now
+				result = max(
+					result,
+					maxProfit(d-1, trades-1, 0)+p,
+				)
+			}
+		}
+
+		memo[key] = result
+
+		return result
 	}
 
-	// fmt.Println(dp)
-
-	return dp[D][k]
+	days := len(prices)
+	return maxProfit(days-1, k, 0)
 }
 
 func main() {
