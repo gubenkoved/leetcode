@@ -2,68 +2,39 @@ from typing import List
 
 class Solution:
     def maxProfit(self, prices: List[int], strategy: List[int], k: int) -> int:
-        # different place to apply the strategy can happen N - k + 1 times
-        # however can can just do that in single pass because only a few changes
-        # will be needed elements will be different between next and prev steps:
-        #
+        # updated value can be calculated using range sums for the original
+        # strategy yield and for the prices themselves as updated strategy
+        # only uses single range of the "sell" days
         # x x x 0 0 0 0 1 1 1 1 x x x x x   <<<< prev step
         # x x x x 0 0 0 0 1 1 1 1 x x x x   <<<< new step
-        #       ^       ^       ^
 
         n = len(prices)
-        orig_prefix_sums = [0] * n
 
-        # calculate original result
+        orig_strategy_prefix_sums = [0] * (n + 1)
+        prices_prefix_sum = [0] * (n + 1)
+
         for idx in range(n):
-            cur = prices[idx] * strategy[idx]
-            orig_prefix_sums[idx] = cur
-            if idx > 0:
-                orig_prefix_sums[idx] += orig_prefix_sums[idx-1]
+            orig_strategy_prefix_sums[idx + 1] = orig_strategy_prefix_sums[idx] + prices[idx] * strategy[idx]
+            prices_prefix_sum[idx + 1] = prices_prefix_sum[idx] + prices[idx]
 
-        # sliding window showing result inside window of size k with updated
-        # strategy
-        window = 0
+        result = orig_strategy_prefix_sums[n]
 
-        # setup the first window
-        for idx in range(k):
-            if idx < k // 2:
-                # first k / 2 are hold (0) in updated
-                pass
-            else:
-                # last k / 2 are sell
-                window += prices[idx]
+        # try to improve the result using updated strategy
+        # x x x x 0 0 0 0 1 1 1 1 x x x x   <<<< new step
+        #         ^     ^       ^
+        #       offset       offset + k - 1
+        #          offset + k//2 - 1
+        for offset in range(n - k + 1):
+            # prefix with original strategy
+            cur = orig_strategy_prefix_sums[offset]
 
-        result = orig_prefix_sums[n - 1]
+            # updated range
+            cur += prices_prefix_sum[offset+k] - prices_prefix_sum[offset + k // 2]
 
-        # handle the first window
-        result = max(
-            result,
-            window + (orig_prefix_sums[n-1] - orig_prefix_sums[k-1])
-        )
+            # suffix with original strategy
+            cur += orig_strategy_prefix_sums[n] - orig_strategy_prefix_sums[offset + k]
 
-        #       offset
-        #         v
-        # 0 1 2 3 4 5 6 7 8 9
-        # x x x 0 0 0 0 1 1 1 1 x x x x x  << prev
-        # x x x x 0 0 0 0 1 1 1 1 x x x x  << cur
-        #               ^       ^
-        # in order to calculate current window result from previous 2 updates
-        # has to happen
-
-        # offset is tracking offset of updated window of len k
-        for offset in range(1, n - k + 1):
-            # update the window
-            window += prices[offset + k - 1] - prices[offset + (k // 2) - 1]
-
-            cur_result = window
-
-            # add original result using prefix sum (before the updated win)
-            cur_result += orig_prefix_sums[offset-1]
-
-            # ... and after the updated window
-            cur_result += orig_prefix_sums[n-1]-orig_prefix_sums[offset + k - 1]
-
-            result = max(result, cur_result)
+            result = max(result, cur)
 
         return result
 
