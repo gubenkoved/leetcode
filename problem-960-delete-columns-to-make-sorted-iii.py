@@ -1,35 +1,39 @@
 from typing import List
-from functools import lru_cache
 
 class Solution:
     def minDeletionSize(self, strs: List[str]) -> int:
-        n = len(strs)
         k = len(strs[0])
 
+        cache = {}
+
         # possible states count -- n * k
-        @lru_cache(None)
-        def f(last_letters_vector: str, idx: int) -> int:
+        def f(last_kept_col_idx: int, idx: int) -> int:
             if idx == k:
                 return 0
 
-            # alternative 1: keep this column if no contradiction i.e.
-            #  all chars are bigger than the last one
-            # alt 2: drop column - costs 1 col deletion
+            key = (last_kept_col_idx, idx)
+            if key in cache:
+                return cache[key]
 
-            can_keep = all(
-                s[idx] >= last_letters_vector[s_idx]
-                for s_idx, s in enumerate(strs))
+            # alt1: keep this column if no contradiction i.e.
+            #  all chars are bigger than the last one
+            # alt2: drop column - costs 1 col deletion
+
+            can_keep = last_kept_col_idx == -1 or all(
+                s[idx] >= s[last_kept_col_idx]
+                for s in strs)
 
             # drop column!
-            result = f(last_letters_vector, idx + 1) + 1
+            result = f(last_kept_col_idx, idx + 1) + 1
 
             if can_keep:
-                new_vector = ''.join(s[idx] for s in strs)
-                result = min(result, f(new_vector, idx+1))
+                result = min(result, f(idx, idx+1))
+
+            cache[key] = result
 
             return result
 
-        return f('a' * n, 0)
+        return f(-1, 0)
 
 
 if __name__ == '__main__':
