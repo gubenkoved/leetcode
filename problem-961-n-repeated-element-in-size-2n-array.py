@@ -1,14 +1,10 @@
-import collections
 from typing import List
 
 class Solution:
     def repeatedNTimes(self, nums: List[int]) -> int:
-        freq = collections.defaultdict(lambda: 0)
+        seen = set()
         for x in nums:
-            freq[x] += 1
-
-        for x, f in freq.items():
-            if f == len(nums) // 2:
+            if x in seen:
                 return x
-
+            seen.add(x)
         return -1
