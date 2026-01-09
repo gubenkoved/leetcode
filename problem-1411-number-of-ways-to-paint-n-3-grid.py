@@ -1,7 +1,5 @@
-import functools
-import sys
+import collections
 
-sys.setrecursionlimit(10**6)
 
 class Solution:
     def numOfWays(self, n: int) -> int:
@@ -21,7 +19,6 @@ class Solution:
 
         # gen all triples
         all_possible = gen(3, '')
-
         M = 10 ** 9 + 7
 
         def compatible(prev, cur):
@@ -30,25 +27,32 @@ class Solution:
                     return False
             return True
 
-        # count of ways to get to given end result after n steps
-        @functools.lru_cache(maxsize=None)
-        def f(n, target):
-            if n == 1:
-                return target in all_possible
+        # target -> list of compatible targets
+        compatible_targets = collections.defaultdict(list)
 
-            res = 0
-            for prev in all_possible:
-                if not compatible(prev, target):
+        for x in all_possible:
+            for y in all_possible:
+                if not compatible(x, y):
                     continue
-                res += f(n - 1, prev)
-            return res % M
+                compatible_targets[x].append(y)
 
-        result = 0
-        for target in all_possible:
-            result += f(n, target)
-        return result % M
+        counts = {}
+
+        for x in all_possible:
+            counts[x] = 1
+
+        for _ in range(n - 1):
+            next_counts = collections.defaultdict(int)
+            for x in all_possible:
+                for y in compatible_targets[x]:
+                    next_counts[x] += counts[y]
+                    next_counts[x] = next_counts[x] % M
+            counts = next_counts
+
+        return sum(counts.values()) % M
 
 if __name__ == "__main__":
     x = Solution()
     print(x.numOfWays(1), 12)
+    print(x.numOfWays(2), '??')
     print(x.numOfWays(5000), 30228214)
