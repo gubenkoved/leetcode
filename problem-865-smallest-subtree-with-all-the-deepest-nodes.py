@@ -12,8 +12,8 @@ class TreeNode:
 
 class Solution:
     def subtreeWithAllDeepest(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
-        max_subtree_depth = {}
         deepest = 0
+        depth_map = {}
 
         def walk(node, depth):
             nonlocal deepest
@@ -24,43 +24,28 @@ class Solution:
             if node.right:
                 walk(node.right, depth + 1)
 
-            max_subtree_depth[node] = max(
-                max_subtree_depth.get(node.left, 0),
-                max_subtree_depth.get(node.right, 0),
-                depth,
-            )
-
+            depth_map[node] = depth
             deepest = max(deepest, depth)
 
-        # capture max depth
+        # calculate the depth map
         walk(root, 1)
 
-        result = None
+        def min_subtree_with_all_deepest(node):
+            if not node:
+                return None
 
-        # find the node which has both left and right subtrees of the same deepest depth
-        # OR there is just a single node with such depth
-        def walk2(node):
-            nonlocal result
+            if depth_map[node] == deepest:
+                return node
 
-            if node.left:
-                walk2(node.left)
+            left_inner = min_subtree_with_all_deepest(node.left)
+            right_inner = min_subtree_with_all_deepest(node.right)
 
-            if node.right:
-                walk2(node.right)
+            if left_inner and right_inner:
+                return node
 
-            if node.left and node.right:
-                if max_subtree_depth[node.left] == deepest and max_subtree_depth[node.right] == deepest:
-                    result = node
-            elif node.left or node.right:
-                # if we have only left or only right it is never an answer as we can just go level down
-                pass
-            else:
-                if max_subtree_depth[node] == deepest:
-                    result = node
+            return left_inner or right_inner
 
-        walk2(root)
-
-        return result
+        return min_subtree_with_all_deepest(root)
 
 
 if __name__ == '__main__':
