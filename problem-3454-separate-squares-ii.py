@@ -1,4 +1,7 @@
 from typing import List
+import decimal
+
+decimal.getcontext().prec = 20
 
 class Solution:
     def separateSquares(self, squares: List[List[int]]) -> float:
@@ -80,23 +83,25 @@ class Solution:
             max_y = max(max_y, y + h)
             total_area += w * h
 
+        half_total_area = decimal.Decimal(total_area) / 2
+
         eps = 10 ** -5
         l, r = min_y, max_y
         while r - l > eps:
             mid = (l + r) / 2
 
             # calculate area below mid
-            area_below_mid = 0
+            area_below_mid = decimal.Decimal(0)
             for y, w, h in rectangles:
                 if mid <= y:
                     continue
                 if mid >= y + h:
                     area_below_mid += w * h
                     continue
-                ratio = (mid - y) / h
+                ratio = decimal.Decimal(mid - y) / decimal.Decimal(h)
                 area_below_mid += ratio * w * h
 
-            if area_below_mid >= total_area / 2:
+            if area_below_mid >= half_total_area:
                 r = mid
             else:
                 l = mid
