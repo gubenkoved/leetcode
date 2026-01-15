@@ -52,18 +52,21 @@ class Solution:
                         result += x - segment_start
             return result
 
-        for y, x1, x2, event_type in events:
+        for idx in range(len(events)):
+            y, x1, x2, event_type = events[idx]
             if event_type == 'add':
                 in_scope.append((x1, x2))
             elif event_type == 'del':
                 in_scope.remove((x1, x2))
 
             # add a new rectangle (skip empty ones)
-            if prev_width * (y - prev_y):
-                rectangles.append((prev_y, prev_width, y - prev_y))
-
-            prev_width = in_scope_covered_width()
-            prev_y = y
+            # simple optimization: if there are multiple events for the same Y
+            # only process the updated width once to save CPU
+            if idx + 1 == len(events) or events[idx + 1][0] != y:
+                if prev_width * (y - prev_y):
+                    rectangles.append((prev_y, prev_width, y - prev_y))
+                prev_width = in_scope_covered_width()
+                prev_y = y
 
         # sort the events by y (sweeping line moving up)
         events.sort(key=lambda t: t[0])
@@ -103,5 +106,6 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
-    print(x.separateSquares([[0,0,1],[2,2,1]]), 1)
-    print(x.separateSquares([[0,0,2],[1,1,1]]), 1)
+    # print(x.separateSquares([[0,0,1],[2,2,1]]), 1)
+    # print(x.separateSquares([[0,0,2],[1,1,1]]), 1)
+    print(x.separateSquares([[0,0,9999999],[10000000,0,9999999],[0,9999999,1],[0,10000000,9999999],[10000000,10000000,9999999]]), 9999999.5)
