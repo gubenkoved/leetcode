@@ -3,11 +3,13 @@ import decimal
 
 decimal.getcontext().prec = 20
 
+INF = float('+inf')
 
 class SegmentTree:
     def __init__(self, x):
         # idx of point -> its real coordinate (sorted)
         self.x = x
+        self.xn = len(x)
 
         # determine the first power of 2 that holds all the leaf nodes
         n = 1
@@ -23,25 +25,17 @@ class SegmentTree:
         self.counter = [0] * (2 * n)
         self.coverage = [0] * (2 * n)
 
-    def x_at(self, idx):
-        if idx >= len(self.x):
-            return float('+inf')
-        return self.x[idx]
-
     # updates the segment tree by adding/removing segment [x_left, x_right)
     # there real coordinates are used AND it is guaranteed that these are
     # the part of the "x" array
     def update(self, x_left, x_right, is_added):
 
         # updates ST node at index that covers [l, r) leaf nodes
-        def updater(idx, l, r):
+        def updater(idx, l, r, seg_left_x, seg_right_x):
             m = (l + r) // 2
 
             # left child covers leaf indexes [l, m)
             # right child covers leaf indexes [m, r)
-
-            seg_left_x = self.x_at(l)
-            seg_right_x = self.x_at(r)
 
             # no intersection with the target interval? exit!
             if seg_left_x >= x_right or seg_right_x <= x_left:
@@ -52,8 +46,12 @@ class SegmentTree:
                 self.counter[idx] += +1 if is_added else -1
             else:
                 # coverage is not full, need to go to child nodes
-                updater(2 * idx, l, m)
-                updater(2 * idx + 1, m, r)
+                seg_mid_x = INF if m >= self.xn else self.x[m]
+
+                updater(2 * idx, l, m, seg_left_x, seg_mid_x)
+
+                if seg_mid_x != INF:
+                    updater(2 * idx + 1, m, r, seg_mid_x, seg_right_x)
 
             # post-order update the covered width for affected nodes in the ST
 
@@ -69,7 +67,7 @@ class SegmentTree:
                     self.coverage[idx] = 0
 
         # update the tree starting at root
-        updater(1, 0, self.n)
+        updater(1, 0, self.n, self.x[0], INF)
 
 
     def total_covered(self):
