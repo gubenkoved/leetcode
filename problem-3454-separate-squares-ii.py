@@ -84,29 +84,17 @@ class Solution:
             total_area += w * h
 
         half_total_area = decimal.Decimal(total_area) / 2
+        accumulated = decimal.Decimal()
 
-        eps = 10 ** -5
-        l, r = min_y, max_y
-        while r - l > eps:
-            mid = (l + r) / 2
-
-            # calculate area below mid
-            area_below_mid = decimal.Decimal(0)
-            for y, w, h in rectangles:
-                if mid <= y:
-                    continue
-                if mid >= y + h:
-                    area_below_mid += w * h
-                    continue
-                ratio = decimal.Decimal(mid - y) / decimal.Decimal(h)
-                area_below_mid += ratio * w * h
-
-            if area_below_mid >= half_total_area:
-                r = mid
+        for y, w, h in rectangles:
+            if accumulated + h * w >= half_total_area:
+                leftover = half_total_area - accumulated
+                dy = leftover / w
+                return y + dy
             else:
-                l = mid
+                accumulated += h * w
 
-        return (l + r) / 2
+        assert False, 'should not be there'
 
 
 if __name__ == '__main__':
