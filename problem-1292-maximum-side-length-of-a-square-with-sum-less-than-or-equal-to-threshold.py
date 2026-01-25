@@ -36,6 +36,9 @@ class Solution:
                 for s in range(result, max_size + 1):
                     if sq_sum(r, c, s) <= threshold:
                         result = max(result, s)
+                    else:
+                        # all elements are positive and we already beyond the threshold
+                        break
 
         return result
 
