@@ -83,7 +83,7 @@ class Solution:
                 if node1.prev.value > new_node.value:
                     inversions_count += 1
 
-                node1.next = new_node
+                node1.prev.next = new_node
                 new_node.prev = node1.prev
 
             if node2.next:
@@ -103,18 +103,25 @@ class Solution:
             if (nid1, nid2) in invalidated_pairs:
                 continue
 
-            node1: Node = nid_to_node[nid1]
-            node2: Node = nid_to_node[nid2]
+            # print('processing pair (%r, %r)' % (nid1, nid2))
 
-            # print('processing pair %r + %r' % (node1, node2))
+            node1: Node = nid_to_node.pop(nid1)
+            node2: Node = nid_to_node.pop(nid2)
+
+            assert node1.next.node_id == node2.node_id
+            assert node2.prev.node_id == node1.node_id
 
             new_node = Node(node1.value + node2.value)
             new_node.node_id = next_nid
             next_nid += 1
 
+            # print('  new node id is %d' % new_node.node_id)
+
             nid_to_node[new_node.node_id] = new_node
 
             if node1.prev:
+                assert node1.prev.next.node_id == node1.node_id
+
                 new_node.position = node1.prev.position + 1
                 invalidated_pairs.add((node1.prev.node_id, node1.node_id))
 
@@ -124,6 +131,8 @@ class Solution:
                 heapq.heappush(pairs_heap, new_pair_tuple)
 
             if node2.next:
+                assert node2.next.prev.node_id == node2.node_id
+
                 if new_node.position == -1:
                     new_node.position = node2.next.position - 1
 
