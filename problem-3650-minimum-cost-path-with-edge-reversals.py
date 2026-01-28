@@ -2,7 +2,6 @@ import collections
 from typing import List
 import heapq
 
-
 class Solution:
     def minCost(self, n: int, edges: List[List[int]]) -> int:
 
@@ -17,7 +16,6 @@ class Solution:
 
         heap = [(0, 0)]
         visited = set()
-        cost_map = {}
 
         while heap:
             cur_cost, node = heapq.heappop(heap)
@@ -26,13 +24,16 @@ class Solution:
                 continue
 
             visited.add(node)
-            cost_map[node] = cur_cost
+
+            if node == n - 1:
+                return cur_cost
 
             # add neighbors
             for neigh, cost in adjacency.get(node, []):
-                heapq.heappush(heap, (cur_cost + cost, neigh))
+                if neigh not in visited:
+                    heapq.heappush(heap, (cur_cost + cost, neigh))
 
-        return cost_map.get(n - 1, -1)
+        return -1
 
 if __name__ == '__main__':
     x = Solution()
