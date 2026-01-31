@@ -27,17 +27,20 @@ class Solution:
             (0, -k, (0, 0)),
         ]
 
-        visited = set()
+        # position -> max amount of teleports we had there
+        visited = {}
 
         finish = (rows - 1, cols - 1)
 
         while heap:
             cost, k_left_neg, pos = heapq.heappop(heap)
 
-            if (pos, k_left_neg) in visited:
+            # we seen this position and we had equal or even more teleports left
+            # no need to explore this branch!
+            if pos in visited and visited[pos] >= -k_left_neg:
                 continue
 
-            visited.add((pos, k_left_neg))
+            visited[pos] = -k_left_neg
 
             if pos == finish:
                 return cost
@@ -53,14 +56,15 @@ class Solution:
                 if nr >= rows or nc >= cols:
                     continue
                 pos = (nr, nc)
-                if (pos, k_left_neg) not in visited:
+
+                if pos not in visited or visited[pos] < -k_left_neg:
                     heapq.heappush(heap, (cost + grid[nr][nc], k_left_neg, pos))
 
             # tele-neighbors
             if k_left_neg < 0:
                 for nr, nc in teleport_targets[(r,c)]:
                     pos = (nr, nc)
-                    if (pos, k_left_neg) not in visited:
+                    if pos not in visited or visited[pos] < -(k_left_neg + 1):
                         heapq.heappush(heap, (cost, k_left_neg + 1, pos))
 
         assert False, 'unreachable'
