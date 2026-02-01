@@ -45,23 +45,19 @@ class Solution:
                 # LESS OR EQUAL to the VALUE at a given point
                 cost_grid = calc_table(k - 1)
 
-                prev_costs_ordered = []
-
-                # list of costs from previous step in the order of points value decreasing
-                for r, c in ordered_points:
-                    prev_costs_ordered.append(cost_grid[r][c])
-
                 # teleports handling
                 cur = n - 1
                 group_start = cur
-                rolling_min_cost = prev_costs_ordered[cur]
+                first_point = ordered_points[-1]
+                rolling_min_cost = cost_grid[first_point[0]][first_point[1]]
 
                 while cur >= 0:
                     r, c = ordered_points[cur]
 
                     while group_start > cur or group_start > 0 and grid_val_at(ordered_points[group_start - 1]) == grid_val_at(ordered_points[cur]):
                         group_start -= 1
-                        rolling_min_cost = min(rolling_min_cost, prev_costs_ordered[group_start])
+                        r2, c2 = ordered_points[group_start]
+                        rolling_min_cost = min(rolling_min_cost, cost_grid[r2][c2])
 
                     # either teleport here
                     cost_grid[r][c] = min(cost_grid[r][c], rolling_min_cost)
@@ -83,6 +79,10 @@ class Solution:
 
 if __name__ == '__main__':
     x = Solution()
+    print(x.minCost([[16,6],[12,13]], 3), 0)
+
+    print(x.minCost([[1,3,3],[2,5,4],[4,3,5]], 2), 7)
+
     print(x.minCost([[6, 7, 1, 20, 11],
                      [4, 5, 18, 23, 28]], 0), 67)
 
