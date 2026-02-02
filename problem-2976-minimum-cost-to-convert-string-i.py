@@ -13,8 +13,14 @@ class Solution:
         for a, b, tc in zip(original, changed, cost):
             adjacency[a].append((b, tc))
 
+        # (from, to) -> best cost
+        best_costs = {}
+
         @functools.lru_cache(None)
         def cost(a, b) -> int:
+            if (a, b) in best_costs:
+                return best_costs[a, b]
+
             visited = set()
             heap = [(0, a)]
 
@@ -24,6 +30,8 @@ class Solution:
                 if node in visited:
                     continue
                 visited.add(node)
+
+                best_costs[(a, node)] = cur_cost
 
                 if node == b:
                     return cur_cost
